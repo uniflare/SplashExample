@@ -2,3 +2,8 @@
 /bin/*
 /Solutions/*
 /Backup/*
+/ext/*
+/ext/*
+cmake*
+*.sln
+*.lnk

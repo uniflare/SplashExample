@@ -1,12 +1,10 @@
-// Copyright 2001-2016 Crytek GmbH / Crytek Group. All rights reserved.
-
 #pragma once
+//#include "Helpers/defines.h"
 
 #include <CryCore/Project/CryModuleDefs.h>
 #define eCryModule eCryM_EnginePlugin
 #define GAME_API   DLL_EXPORT
+#define HelperDevDebug 1
 
 #include <CryCore/Platform/platform.h>
-#include <CrySystem/ISystem.h>
-#include <Cry3DEngine/I3DEngine.h>
-#include <CryNetwork/ISerialize.h>
+#include "Helpers/debug.h"

@@ -1,0 +1,8 @@
+<cryasset>
+ <AssetMetadata version="0" type="Texture" guid="{37FDBB26-5E31-D12C-0DA8-B5F6DECFB802}" source="splash.tif">
+  <Files>
+   <File path="splash.dds"/>
+  </Files>
+  <Details />
+ </AssetMetadata>
+</cryasset>

@@ -1,11 +1,23 @@
-cmake_minimum_required (VERSION 3.6.0)
-project (Plugin VERSION 1.0 LANGUAGES CXX)
+# CMakeGen template
+#
+# This file is used by CMakeGen as a template for 
+# generating the CMakeList.txt file required to 
+# build your cryengine 5 projects.
+#
+# Tested with CryEngine Release branch version 5.3
+#
+# Make sure you set these variables appropriately!
+#
+set (TestPlatformPath "C:/dev/git/sf/BLANKGAME")
+set (TestPlatformProject "${TestPlatformPath}/Game.cryproject")
+set (ProjectName "Plugin")
 
-#set (TestPlatformPath DIRECTORY "C:/dev/git/sf/INZGAME")
+cmake_minimum_required (VERSION 3.6.0)
+project (${ProjectName} VERSION 1.0 LANGUAGES CXX)
 
 if (${CMAKE_GENERATOR} MATCHES "^Visual Studio")
 	# Set startup project properties
-	configure_file ("Plugin.vcxproj.user.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user")
+	configure_file ("${PROJECT_NAME}.vcxproj.user.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user")
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 endif()
 
@@ -13,32 +25,37 @@ option(OPTION_PCH "Enable Precompiled headers" ON)
 
 find_package (CryCommon REQUIRED)
 
-set (SourceGroup_PluginInterface
-	"Interface/ICryFreeVideoSystem.h"
-	"Interface/ICryFreeVideoPlugin.h"
+set (SourceGroup_Helpers
+	"Helpers/debug.h"
 )
-source_group("Interface" FILES ${SourceGroup_PluginInterface})
+source_group("Helpers" FILES ${SourceGroup_Helpers})
 
-set (SourceGroup_PluginMain
+set (SourceGroup_Interface
+	"Interface/ISplashExample.h"
+	"Interface/ISplashExamplePlugin.h"
+)
+source_group("Interface" FILES ${SourceGroup_Interface})
+
+set (SourceGroup_Main
+	"Plugin.cpp"
+	"Plugin.h"
 	"StdAfx.cpp"
 	"StdAfx.h"
-	"Main/Plugin.cpp"
-	"Main/Plugin.h"
 )
-source_group("Main" FILES ${SourceGroup_PluginMain})
+source_group("Main" FILES ${SourceGroup_Main})
 
-set (SourceGroup_PluginSystem
-	"System/CryFreeVideoSystem.cpp"
-	"System/CryFreeVideoSystem.h"
+set (SourceGroup_System
+	"System/SplashExample.cpp"
+	"System/SplashExample.h"
 )
-source_group("System" FILES ${SourceGroup_PluginSystem})
+source_group("System" FILES ${SourceGroup_System})
 
 set (SOURCE
-	${SourceGroup_PluginInterface}
-	${SourceGroup_PluginMain}
-	${SourceGroup_PluginSystem}
+	${SourceGroup_Helpers}
+	${SourceGroup_Interface}
+	${SourceGroup_Main}
+	${SourceGroup_System}
 )
-
 if(OPTION_PCH AND MSVC)
 	set (PRECOMPILED_SOURCE ${SOURCE})
 	list(REMOVE_ITEM PRECOMPILED_SOURCE "StdAfx.cpp")
@@ -59,5 +76,28 @@ endif(WIN32)
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
   COMMAND "${CMAKE_COMMAND}" -E copy 
      "$<TARGET_FILE:${PROJECT_NAME}>"
-     "C:/dev/git/sf/BLANKGAME/$<TARGET_FILE_NAME:${PROJECT_NAME}>" 
+     "${TestPlatformPath}/$<TARGET_FILE_NAME:${PROJECT_NAME}>" 
+  COMMENT "Copying to test platform directory")
+  
+  macro(copy_files GLOBPAT DESTINATION)
+  file(GLOB COPY_FILES
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    ${GLOBPAT})
+  add_custom_target(copy ALL
+    COMMENT "Copying files: ${GLOBPAT}")
+
+  foreach(FILENAME ${COPY_FILES})
+    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}")
+    set(DST "${DESTINATION}/${FILENAME}")
+
+    add_custom_command(
+      TARGET copy
+      COMMAND ${CMAKE_COMMAND} -E copy ${SRC} ${DST}
+      )
+  endforeach(FILENAME)
+endmacro(copy_files)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
+  COMMAND "${CMAKE_COMMAND}" -E copy 
+     "$<TARGET_FILE:${PROJECT_NAME}>"
+     "${TestPlatformPath}/$<TARGET_FILE_NAME:${PROJECT_NAME}>" 
   COMMENT "Copying to test platform directory")

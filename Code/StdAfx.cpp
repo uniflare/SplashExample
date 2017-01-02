@@ -1,4 +1,3 @@
-// CryEngine Source File
-// Copyright (C), Crytek, 1999-2016
+// Copyright 2001-2016 Crytek GmbH / Crytek Group. All rights reserved.
 
 #include "StdAfx.h"
