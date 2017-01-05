@@ -40,7 +40,6 @@ CPlugin_SplashExample::~CPlugin_SplashExample()
 void CPlugin_SplashExample::RegisterCVars()
 {
 	REGISTER_CVAR2("splash_show", &m_sCVars.m_ShowSplashOverlay, 1, VF_CHEAT, "Whether to show the splash screen (0=no)");
-	REGISTER_CVAR2("splash_pausegame", &m_sCVars.m_StallSystemInit, 1, VF_CHEAT, "Stall system initialization (0=no) to prevent any main menu from overriding our splash screen");
 	REGISTER_CVAR2("splash_minimumPlaybackTime", &m_sCVars.m_MinPlaybackSec, 10.f, VF_CHEAT, "Minimum playback time in seconds (float min 0.f)");
 	REGISTER_CVAR2("splash_startTimeOffset", &m_sCVars.m_StartTimeOffset, 0.0f, VF_CHEAT, "Offset to make splash_minimumPlaybackTime more accurate (float)");
 	m_sCVars.m_pOverlayTexturePath = REGISTER_STRING("splash_texture", "SplashExample/textures/splash.dds", VF_CHEAT, "Sets the splash overlay texture to load");
@@ -58,7 +57,6 @@ void CPlugin_SplashExample::UnregisterCVars()
 		pConsole->UnregisterVariable("splash_texture");
 		pConsole->UnregisterVariable("splash_startTimeOffset");
 		pConsole->UnregisterVariable("splash_minimumPlaybackTime");
-		pConsole->UnregisterVariable("splash_pausegame");
 		pConsole->UnregisterVariable("splash_show");
 	}
 }
