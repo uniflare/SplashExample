@@ -1,3 +1,5 @@
+// 05/01/2017 by Uniflare.
+
 #pragma once
 //#include "Helpers/defines.h"
 
@@ -7,4 +9,3 @@
 #define HelperDevDebug 1
 
 #include <CryCore/Platform/platform.h>
-#include "Helpers/debug.h"

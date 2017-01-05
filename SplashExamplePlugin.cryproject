@@ -8,9 +8,9 @@
         ]
     },
     "info": {
-        "name": "Plugin Template"
+        "name": "Splash Example Plugin"
     },
     "require": {
-        "engine": "engine-5.3"
+        "engine": "izengine-5.3-0.1"
     }
 }

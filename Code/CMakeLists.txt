@@ -10,7 +10,7 @@
 #
 set (TestPlatformPath "C:/dev/git/sf/BLANKGAME")
 set (TestPlatformProject "${TestPlatformPath}/Game.cryproject")
-set (ProjectName "Plugin")
+set (ProjectName "SplashExample")
 
 cmake_minimum_required (VERSION 3.6.0)
 project (${ProjectName} VERSION 1.0 LANGUAGES CXX)
@@ -24,37 +24,20 @@ endif()
 option(OPTION_PCH "Enable Precompiled headers" ON)
 
 find_package (CryCommon REQUIRED)
-
-set (SourceGroup_Helpers
-	"Helpers/debug.h"
-)
-source_group("Helpers" FILES ${SourceGroup_Helpers})
-
-set (SourceGroup_Interface
-	"Interface/ISplashExample.h"
-	"Interface/ISplashExamplePlugin.h"
-)
-source_group("Interface" FILES ${SourceGroup_Interface})
+find_package (CryAction REQUIRED)
 
 set (SourceGroup_Main
-	"Plugin.cpp"
-	"Plugin.h"
+	"SplashExample.cpp"
+	"SplashExample.h"
+	"SplashExamplePlugin.cpp"
+	"SplashExamplePlugin.h"
 	"StdAfx.cpp"
 	"StdAfx.h"
 )
 source_group("Main" FILES ${SourceGroup_Main})
 
-set (SourceGroup_System
-	"System/SplashExample.cpp"
-	"System/SplashExample.h"
-)
-source_group("System" FILES ${SourceGroup_System})
-
 set (SOURCE
-	${SourceGroup_Helpers}
-	${SourceGroup_Interface}
 	${SourceGroup_Main}
-	${SourceGroup_System}
 )
 if(OPTION_PCH AND MSVC)
 	set (PRECOMPILED_SOURCE ${SOURCE})
@@ -67,35 +50,12 @@ endif (OPTION_PCH AND MSVC)
 
 add_library(${PROJECT_NAME} MODULE ${SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${PROJECT_NAME} PRIVATE CryCommon)
+target_link_libraries(${PROJECT_NAME} PRIVATE CryCommon CryAction)
 
 if (WIN32)
 	target_link_libraries(${PROJECT_NAME} PRIVATE Ntdll)
 endif(WIN32)
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
-  COMMAND "${CMAKE_COMMAND}" -E copy 
-     "$<TARGET_FILE:${PROJECT_NAME}>"
-     "${TestPlatformPath}/$<TARGET_FILE_NAME:${PROJECT_NAME}>" 
-  COMMENT "Copying to test platform directory")
-  
-  macro(copy_files GLOBPAT DESTINATION)
-  file(GLOB COPY_FILES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    ${GLOBPAT})
-  add_custom_target(copy ALL
-    COMMENT "Copying files: ${GLOBPAT}")
-
-  foreach(FILENAME ${COPY_FILES})
-    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}")
-    set(DST "${DESTINATION}/${FILENAME}")
-
-    add_custom_command(
-      TARGET copy
-      COMMAND ${CMAKE_COMMAND} -E copy ${SRC} ${DST}
-      )
-  endforeach(FILENAME)
-endmacro(copy_files)
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
   COMMAND "${CMAKE_COMMAND}" -E copy 
      "$<TARGET_FILE:${PROJECT_NAME}>"
