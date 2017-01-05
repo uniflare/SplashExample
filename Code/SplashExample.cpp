@@ -212,8 +212,7 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 			}
 			else
 			{
-				// Stall the engine if we havn't shown our splash for enough time!
-				CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "Splash Example: Could not load texture '%s'", gEnv->pConsole->GetCVar("splash_texture_a")->GetString());
+				CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "SplashExamplePlugin: Missing texture '%s'", gEnv->pConsole->GetCVar("splash_texture_a")->GetString());
 			}
 
 			m_pSplashTextureA = nullptr;
@@ -247,16 +246,14 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 				int userFS = GetAttributeIValue("Fullscreen", pProfile);
 				if (userFS != -1)
 				{
-					CryLogAlways("SplashExamplePlugin: Settings Fullscreen to profile setting  ('%s')", CryStringUtils::toString(userFS));
+					CryLogAlways("SplashExamplePlugin: Setting Fullscreen CVar to profile setting ('%s')", CryStringUtils::toString(userFS));
 					gEnv->pConsole->ExecuteString("r_fullscreen " + CryStringUtils::toString(userFS));
 				}
 
 				int userRes = GetAttributeIValue("Resolution", pProfile);
-				if (userRes >= 0)
-				{
-					CryLogAlways("SplashExamplePlugin: Settings resolution from profile setting to '%s', index '%s'", GetScreenResolution(userRes).sResolution, CryStringUtils::toString(userRes));
-					SetResolutionCVars(GetScreenResolution(userRes));
-				}
+				auto res = GetScreenResolution(userRes);
+				CryLogAlways("SplashExamplePlugin: Settings resolution from profile setting to '%s', index '%s'", res.sResolution, CryStringUtils::toString(userRes));
+				SetResolutionCVars(res);
 			}
 			else
 			{
@@ -276,8 +273,7 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 			}
 			else
 			{
-				// Stall the engine if we havn't shown our splash for enough time!
-				CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "Splash Example: Could not load texture '%s'", gEnv->pConsole->GetCVar("splash_texture")->GetString());
+				CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "SplashExamplePlugin: Missing texture '%s'", gEnv->pConsole->GetCVar("splash_texture")->GetString());
 			}
 
 			break;
@@ -306,7 +302,7 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 			if (m_pSplashTexture)
 			{
 				// Stall the engine if we havn't shown our splash for enough time!
-				CryLogAlways("Splash Example: Stalling thread for splash");
+				CryLogAlways("SplashExamplePlugin: Stalling thread for splash");
 
 				CSimpleThreadBackOff backoff;
 				while (gEnv->pTimer->GetAsyncCurTime() - MinPlaybackSec <= PlaybackStartTime) {
@@ -339,8 +335,7 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 			}
 			else
 			{
-				// Stall the engine if we havn't shown our splash for enough time!
-				CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "Splash Example: Could not load texture '%s'", gEnv->pConsole->GetCVar("splash_texture")->GetString());
+				CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "SplashExamplePlugin: Missing texture '%s'", gEnv->pConsole->GetCVar("splash_texture")->GetString());
 			}
 
 			// Re-enable cursor

@@ -14,13 +14,13 @@
   - Automatically overrides original splash screens (if any)
 
 ### Installing pre built binary
-Installing the plugin to an existing project is easy, jsut drop the plugin next to your `.cryproject` file and add this line to the `cryplugins.csv` file:
+Installing the plugin to an existing project is easy, just drop the plugin next to your `.cryproject` file and add this line to the `cryplugins.csv` file:
 ```
 C++;SplashExample;Plugin_SplashExample;SplashExample.dll;Assets
 ```
 
 ### Building from source
-Once you clone the git source to a local repo you may want to modify the `CMakeLists.txt` file in `code/`. Specifically `TestPlatformPath` and `TestPlatformProject`, settings these properly will allow you to build and debug without having to move the fresh dll or set the debugging properties.
+Once you clone the git source to a local repo you may want to modify the `CMakeLists.txt` file in `code/`. Specifically `TestPlatformPath` and `TestPlatformProject`, setting these properly will allow you to build and debug without having to move a fresh dll or setting the debugging properties on every build.
 
 ##### Take note when building;
 The supplied `CMakeLists.txt` will automatically copy the project output dll to the specified `TestPlatformPath` on `PostBuild`. It will also modify the `vcxproj.user.in` file from `code/` to set the debugger launch target to the specified `TestPlatformProject` when generating the solution.
