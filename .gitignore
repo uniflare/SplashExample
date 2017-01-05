@@ -1,5 +1,5 @@
 # Build specific files, we only want source code tracked
-/bin/*
+*.pdb
 /Solutions/*
 /Backup/*
 /ext/*

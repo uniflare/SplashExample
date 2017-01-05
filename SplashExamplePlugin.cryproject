@@ -11,6 +11,6 @@
         "name": "Splash Example Plugin"
     },
     "require": {
-        "engine": "izengine-5.3-0.1"
+        "engine": "engine-5.3"
     }
 }
