@@ -6,7 +6,9 @@
   - Compatible with engine templates and GameSDK Sample project for 5.3
   - Several CVars to control the plugin without building from source
     - CVar `splash_show` (def 1) Enable/Disable splash plugin
+    - CVar `splash_show_initial` (def 1) Controls showing the intial splash image
     - CVar `splash_minimumPlaybackTime` (def 10.0) Splash display time in seconds
+    - CVar `splash_minimumPlaybackTimeA` (def 5.0) Initial splash display time in seconds
     - CVar `splash_startTimeOffset` (def 0.0) Allows for more accurate splash length
     - CVar `splash_texture_a` (def 'SplashExample/textures/splash_a.dds') Pre splash texture
     - CVar `splash_texture` (def 'SplashExample/textures/splash.dds') Main splash texture
@@ -14,16 +16,28 @@
   - Automatically overrides original splash screens (if any)
 
 ### Installing pre built binary
-Installing the plugin to an existing project is easy, just drop the plugin next to your `.cryproject` file and add this line to the `cryplugins.csv` file:
+Installing the plugin to an existing project using the pre-built win 64 binaries is easy.
+  - Copy the `SplashExample.dll` file next to your own `Game.dll` file (in `bin/win_x64` folder)
+  - Merge the `Assets` directory from the plugin with your games own `Assets` folder
+  - Add this line to the `cryplugins.csv` (next to your cryproject file):
 ```
-C++;SplashExample;Plugin_SplashExample;SplashExample.dll;Assets
+C++;SplashExample;Plugin_SplashExample;bin/win_x64/SplashExample.dll;Assets
 ```
+
+Take note: For the best effect with the initial splash screen, you should set r_width and r_height to the 
+same dimensions as the splash_a.dds texture you supply. Also, make sure r_fullscreen is not set to 1 in any cfg.
+(This is not required for the plugin to work, but not enforcing this will cause the intial splash to flicker between settings)
 
 ### Building from source
-Once you clone the git source to a local repo you may want to modify the `CMakeLists.txt` file in `code/`. Specifically `TestPlatformPath` and `TestPlatformProject`, setting these properly will allow you to build and debug without having to move a fresh dll or setting the debugging properties on every build.
+Building is not necessary to use the plugin, however it is very easy to do so.
+Take note the supplied `CMakeLists.txt` and `vcxproj.user.in` files have been customized, 
+The debugger launch param is automatically set to the specified game project on generating the solution, 
+whilst upon building CMake will copy the built `SplashExample.dll` to the correct location automatically.
 
-##### Take note when building;
-The supplied `CMakeLists.txt` will automatically copy the project output dll to the specified `TestPlatformPath` on `PostBuild`. It will also modify the `vcxproj.user.in` file from `code/` to set the debugger launch target to the specified `TestPlatformProject` when generating the solution.
+To make use of this customization simply modify the variables `TestPlatformPath` and `TestPlatformProject` in the `CMakeLists.txt`. 
+This is highly advised before generating a solution as a copied dll may just end up cluttering your root drive.
 
 ### More information
-For help or more information please look for the associated thread, or pm me (name `Uni Bliss`) on the Cry Engine &reg; forums.
+For help or more information please visit the associated thread on the forums below.
+Cry Engine &reg; Forum Thread: https://www.cryengine.com/community/viewtopic.php?f=314&t=135972
+GitHub &reg; Repository: https://github.com/uniflare/SplashExample
