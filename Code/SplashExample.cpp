@@ -39,11 +39,17 @@ CSplashExample::CSplashExample()
 	, m_bOriginalFullscreen((gEnv->pConsole->GetCVar("r_Fullscreen")->GetIVal() != 0)? true : false) // compatibility
 {
 	// Attempt to load our textures
-	if (gEnv->pCryPak->IsFileExist(gEnv->pConsole->GetCVar("splash_texture_a")->GetString()))
-		m_pSplashTextureA = gEnv->pRenderer->EF_LoadTexture(gEnv->pConsole->GetCVar("splash_texture_a")->GetString(), FT_DONT_STREAM | FT_NOMIPS);
+	if (gEnv->pConsole->GetCVar("splash_show_initial")->GetIVal() != 0)
+	{
+		if (gEnv->pCryPak->IsFileExist(gEnv->pConsole->GetCVar("splash_texture_a")->GetString()))
+			m_pSplashTextureA = gEnv->pRenderer->EF_LoadTexture(gEnv->pConsole->GetCVar("splash_texture_a")->GetString(), FT_DONT_STREAM | FT_NOMIPS);
+	}
 
-	if (gEnv->pCryPak->IsFileExist(gEnv->pConsole->GetCVar("splash_texture")->GetString()))
-		m_pSplashTexture = gEnv->pRenderer->EF_LoadTexture(gEnv->pConsole->GetCVar("splash_texture")->GetString(), FT_DONT_STREAM | FT_NOMIPS);
+	if (gEnv->pConsole->GetCVar("splash_show")->GetIVal() != 0)
+	{
+		if (gEnv->pCryPak->IsFileExist(gEnv->pConsole->GetCVar("splash_texture")->GetString()))
+			m_pSplashTexture = gEnv->pRenderer->EF_LoadTexture(gEnv->pConsole->GetCVar("splash_texture")->GetString(), FT_DONT_STREAM | FT_NOMIPS);
+	}
 
 	if (gEnv->pConsole->GetCVar("splash_show_initial")->GetIVal() != 0)
 	{
@@ -291,14 +297,6 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 			"SplashExamplePlugin: Expected defaults for 'splash_texture_a' and 'sys_rendersplashscreen'."
 		);
 #endif
-		if (gEnv->pConsole->GetCVar("splash_show_initial")->GetIVal() != 0)
-		{
-			SetResolutionCVars(CSplashExample::SScreenResolution(m_pSplashTextureA->GetWidth(), m_pSplashTextureA->GetHeight(), 32, ""));
-			gEnv->pConsole->GetCVar("r_Fullscreen")->Set(0);
-		}
-
-		// Try to remove window borders
-		RemoveWindowBorders();
 
 		// Check if this game has startscreen enabled.
 		if (gEnv->pConsole->GetCVar("sys_rendersplashscreen")->GetIVal() == 1)
@@ -307,15 +305,25 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 		// Remove cursor immediately
 		gEnv->pSystem->GetIHardwareMouse()->Hide(true);
 
-		// Draw our intial splash to window
-		if (m_pSplashTextureA) {
-			gEnv->pRenderer->BeginFrame();
-			Draw2DImageScaled(m_pSplashTextureA);
-			gEnv->pRenderer->EndFrame();
-		}
-		else
+		// Initial splash
+		if (gEnv->pConsole->GetCVar("splash_show_initial")->GetIVal() != 0)
 		{
-			CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "SplashExamplePlugin: Missing texture '%s'", gEnv->pConsole->GetCVar("splash_texture_a")->GetString());
+			SetResolutionCVars(CSplashExample::SScreenResolution(m_pSplashTextureA->GetWidth(), m_pSplashTextureA->GetHeight(), 32, ""));
+			gEnv->pConsole->GetCVar("r_Fullscreen")->Set(0);
+
+			// Try to remove window borders
+			RemoveWindowBorders();
+
+			// Draw our intial splash to window
+			if (m_pSplashTextureA) {
+				gEnv->pRenderer->BeginFrame();
+				Draw2DImageScaled(m_pSplashTextureA);
+				gEnv->pRenderer->EndFrame();
+			}
+			else
+			{
+				CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "SplashExamplePlugin: Missing texture '%s'", gEnv->pConsole->GetCVar("splash_texture_a")->GetString());
+			}
 		}
 
 		break;
@@ -338,31 +346,28 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 		{
 			SetResolutionCVars(CSplashExample::SScreenResolution(m_pSplashTextureA->GetWidth(), m_pSplashTextureA->GetHeight(), 32, ""));
 			gEnv->pConsole->GetCVar("r_Fullscreen")->Set(0);
-		}
 
-		// Try to remove window borders
-		RemoveWindowBorders();
+			// Try to remove window borders
+			RemoveWindowBorders();
 
-		// Delay the initial viewport change for our initial splash time
-		if (m_pSplashTextureA)
-		{
-			// Stall the engine if we havn't shown our intial splash for enough time!
-			CryLogAlways("SplashExamplePlugin: Stalling thread for initial splash");
+			// Delay the initial viewport change for our initial splash time
+			if (m_pSplashTextureA)
+			{
+				// Stall the engine if we havn't shown our intial splash for enough time!
+				CryLogAlways("SplashExamplePlugin: Stalling thread for initial splash");
 
-			auto StartTime = gEnv->pTimer->GetAsyncCurTime();
-			auto LengthTime = gEnv->pConsole->GetCVar("splash_minimumPlaybackTimeA")->GetFVal();
-			DrawAndStall(StartTime, LengthTime, m_pSplashTextureA, true);
+				auto StartTime = gEnv->pTimer->GetAsyncCurTime();
+				auto LengthTime = gEnv->pConsole->GetCVar("splash_minimumPlaybackTimeA")->GetFVal();
+				DrawAndStall(StartTime, LengthTime, m_pSplashTextureA, true);
 
-			m_pSplashTextureA->Release();
-			m_pSplashTextureA = nullptr;
-		}
-		else
-		{
-			CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "SplashExamplePlugin: Missing texture '%s'", gEnv->pConsole->GetCVar("splash_texture")->GetString());
-		}
+				m_pSplashTextureA->Release();
+				m_pSplashTextureA = nullptr;
+			}
+			else
+			{
+				CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "SplashExamplePlugin: Missing texture '%s'", gEnv->pConsole->GetCVar("splash_texture")->GetString());
+			}
 
-		if (gEnv->pConsole->GetCVar("splash_show_initial")->GetIVal() != 0)
-		{
 			// Restore original cvars
 			gEnv->pConsole->GetCVar("r_Width")->Set(m_sOriginalResolution.iWidth);
 			gEnv->pConsole->GetCVar("r_Height")->Set(m_sOriginalResolution.iHeight);
