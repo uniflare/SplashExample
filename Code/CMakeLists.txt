@@ -8,7 +8,7 @@
 #
 # Make sure you set these variables appropriately!
 #
-set (TestPlatformPath "C:/dev/git/sf/BLANKGAME")
+set (TestPlatformPath "C:/dev/git/sf/BLANKGAME/bin/win_x64")
 set (TestPlatformProject "${TestPlatformPath}/Game.cryproject")
 set (ProjectName "SplashExample")
 

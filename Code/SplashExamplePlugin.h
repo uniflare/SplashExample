@@ -14,13 +14,16 @@ class CPlugin_SplashExample
 	// Console variables provided by this object
 	struct SSplashExampleCVars
 	{
-		float m_MinPlaybackSec;
-		float m_StartTimeOffset;
-		int m_ShowSplashOverlay;
+		int m_EnableSplash;
+		int m_EnableSplashInitial;
 		int m_StallSystemInit;
 
-		ICVar * m_pOverlayTexturePath;
+		float m_MinPlaybackSecA;
+		float m_MinPlaybackSec;
+		float m_StartTimeOffset;
+
 		ICVar * m_pOverlayTexturePathA;
+		ICVar * m_pOverlayTexturePath;
 	} m_sCVars;
 
 	// reference to splash example logic
