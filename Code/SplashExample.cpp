@@ -9,27 +9,6 @@
 #include <CryGame/IGameFramework.h>
 #include <IPlayerProfiles.h>
 
-void RemoveWindowBorders()
-{
-	// Makes the image look ugly.. need investigate
-
-	/*
-	// Hide window borders
-	HWND hwnd = (HWND)gEnv->pRenderer->GetCurrentContextHWND();
-
-	LONG lStyle = GetWindowLong(hwnd, GWL_STYLE);
-	lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
-	SetWindowLong(hwnd, GWL_STYLE, lStyle);
-
-	LONG lExStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-	lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
-	SetWindowLong(hwnd, GWL_EXSTYLE, lExStyle);
-
-	gEnv->pRenderer->TryFlush();
-	gEnv->pRenderer->FlushRTCommands(false, true, true);
-	*/
-}
-
 ///////////////////////////////////////////////////////////////////////////
 CSplashExample::CSplashExample()
 	: m_bListenerRegistered(false)
@@ -37,6 +16,7 @@ CSplashExample::CSplashExample()
 	, m_pSplashTexture(nullptr)
 	, m_sOriginalResolution(gEnv->pConsole->GetCVar("r_Width")->GetIVal(), gEnv->pConsole->GetCVar("r_Height")->GetIVal(), 32, "original") // compatibility
 	, m_bOriginalFullscreen((gEnv->pConsole->GetCVar("r_Fullscreen")->GetIVal() != 0)? true : false) // compatibility
+	, m_bOriginalFullscreenWindow((gEnv->pConsole->GetCVar("r_FullscreenWindow")->GetIVal() != 0) ? true : false)
 {
 	// Attempt to load our textures
 	if (gEnv->pConsole->GetCVar("splash_show_initial")->GetIVal() != 0)
@@ -58,10 +38,8 @@ CSplashExample::CSplashExample()
 		// cfg to set resolution/fullscreen (should use profile)
 		SetResolutionCVars(CSplashExample::SScreenResolution(m_pSplashTextureA->GetWidth(), m_pSplashTextureA->GetHeight(), 32, ""));
 		gEnv->pConsole->GetCVar("r_Fullscreen")->Set(0);
+		gEnv->pConsole->GetCVar("r_FullscreenWindow")->Set(1);
 	}
-
-	// Try to remove window borders
-	RemoveWindowBorders();
 
 	// Register as a system event listener
 	RegisterListener(true);
@@ -311,9 +289,6 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 			SetResolutionCVars(CSplashExample::SScreenResolution(m_pSplashTextureA->GetWidth(), m_pSplashTextureA->GetHeight(), 32, ""));
 			gEnv->pConsole->GetCVar("r_Fullscreen")->Set(0);
 
-			// Try to remove window borders
-			RemoveWindowBorders();
-
 			// Draw our intial splash to window
 			if (m_pSplashTextureA) {
 				gEnv->pRenderer->BeginFrame();
@@ -347,9 +322,6 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 			SetResolutionCVars(CSplashExample::SScreenResolution(m_pSplashTextureA->GetWidth(), m_pSplashTextureA->GetHeight(), 32, ""));
 			gEnv->pConsole->GetCVar("r_Fullscreen")->Set(0);
 
-			// Try to remove window borders
-			RemoveWindowBorders();
-
 			// Delay the initial viewport change for our initial splash time
 			if (m_pSplashTextureA)
 			{
@@ -368,10 +340,15 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 				CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "SplashExamplePlugin: Missing texture '%s'", gEnv->pConsole->GetCVar("splash_texture")->GetString());
 			}
 
+			// Should stop here if quitting
+			if (gEnv->pSystem->IsQuitting())
+				break;
+
 			// Restore original cvars
 			gEnv->pConsole->GetCVar("r_Width")->Set(m_sOriginalResolution.iWidth);
 			gEnv->pConsole->GetCVar("r_Height")->Set(m_sOriginalResolution.iHeight);
 			gEnv->pConsole->GetCVar("r_Fullscreen")->Set(m_bOriginalFullscreen);
+			gEnv->pConsole->GetCVar("r_FullscreenWindow")->Set(m_bOriginalFullscreenWindow);
 		}
 
 		// Default to CVar values (system.cfg or game.cfg or user.cfg)
@@ -432,9 +409,6 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 		);
 #endif
 
-		// Try to remove window borders
-		RemoveWindowBorders();
-
 		// Set the start time for render, note this is not an accurate stamp 
 		// for when the image is actually rendered to the screen so we apply 
 		// an additional offset.
@@ -449,8 +423,6 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 			CryLogAlways("SplashExamplePlugin: Stalling thread for splash");
 
 			DrawAndStall(StartTime, LengthTime, m_pSplashTexture, false);
-
-			m_pSplashTexture->Release();
 		}
 		else
 		{
@@ -464,6 +436,8 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 		RegisterListener(false);
 
 		// Make sure we dont use this tex again!
+		if (m_pSplashTexture)
+			m_pSplashTexture->Release();
 		m_pSplashTexture = nullptr;
 	}
 	}

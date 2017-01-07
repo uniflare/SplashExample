@@ -45,6 +45,9 @@ class CSplashExample
 	//! Store the user/game or system cfg fullscreen value to restore it after
 	bool m_bOriginalFullscreen;
 
+	//! Store the user/game or system cfg window border value to restore it after
+	bool m_bOriginalFullscreenWindow;
+
 private:
 
 	//! Draws the supplied texture in stretched mode to the main viewport

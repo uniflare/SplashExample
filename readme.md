@@ -25,7 +25,7 @@ C++;SplashExample;Plugin_SplashExample;bin/win_x64/SplashExample.dll;Assets
 ```
 
 Take note: For the best effect with the initial splash screen, you should set r_width and r_height to the 
-same dimensions as the splash_a.dds texture you supply. Also, make sure r_fullscreen is not set to 1 in any cfg.
+same dimensions as the splash_a.dds texture you supply. Also, make sure r_fullscreen is not set to 1 in any cfg and also make sure r_fullscreenwindow is set to 1 to remove window border.
 (This is not required for the plugin to work, but not enforcing this will cause the intial splash to flicker between settings)
 
 ### Building from source
