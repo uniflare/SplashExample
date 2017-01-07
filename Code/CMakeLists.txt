@@ -8,8 +8,9 @@
 #
 # Make sure you set these variables appropriately!
 #
-set (TestPlatformPath "C:/dev/git/sf/BLANKGAME/bin/win_x64")
-set (TestPlatformProject "${TestPlatformPath}/Game.cryproject")
+set (TestPlatformRoot "C:/dev/git/sf/BLANKGAME")
+set (TestPlatformPath "${TestPlatformRoot}/bin/win_x64")
+set (TestPlatformProject "${TestPlatformRoot}/Game.cryproject")
 set (ProjectName "SplashExample")
 
 cmake_minimum_required (VERSION 3.6.0)

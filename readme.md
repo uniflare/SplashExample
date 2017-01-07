@@ -34,7 +34,7 @@ Take note the supplied `CMakeLists.txt` and `vcxproj.user.in` files have been cu
 The debugger launch param is automatically set to the specified game project on generating the solution, 
 whilst upon building CMake will copy the built `SplashExample.dll` to the correct location automatically.
 
-To make use of this customization simply modify the variables `TestPlatformPath` and `TestPlatformProject` in the `CMakeLists.txt`. 
+To make use of this customization simply modify the variables `TestPlatformRoot`, `TestPlatformPath` and `TestPlatformProject` in the `CMakeLists.txt`. 
 This is highly advised before generating a solution as a copied dll may just end up cluttering your root drive.
 
 ### More information
