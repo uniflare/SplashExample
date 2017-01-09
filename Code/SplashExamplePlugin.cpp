@@ -1,4 +1,5 @@
-// 05/01/2017 by Uniflare.
+// 05/01/2017 Copyright by Uniflare. All rights reserved.
+// See bundled license.txt for more information.
 
 #include "StdAfx.h"
 #include "SplashExamplePlugin.h"
