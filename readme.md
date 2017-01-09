@@ -41,3 +41,5 @@ This is highly advised before generating a solution as a copied dll may just end
 For help or more information please visit the associated thread on the forums below.
 Cry Engine &reg; Forum Thread: https://www.cryengine.com/community/viewtopic.php?f=314&t=135972
 GitHub &reg; Repository: https://github.com/uniflare/SplashExample
+
+Information regarding licensing is found in `license.txt` contained in this package.
