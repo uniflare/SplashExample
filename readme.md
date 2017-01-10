@@ -28,6 +28,8 @@ Take note: For the best effect with the initial splash screen, you should set r_
 same dimensions as the splash_a.dds texture you supply. Also, make sure r_fullscreen is not set to 1 in any cfg and also make sure r_fullscreenwindow is set to 1 to remove window border.
 (This is not required for the plugin to work, but not enforcing this will cause the intial splash to flicker between settings)
 
+An example configuration is found in Assets/SplashExample.cfg
+
 ### Building from source
 Building is not necessary to use the plugin, however it is very easy to do so.
 Take note the supplied `CMakeLists.txt` and `vcxproj.user.in` files have been customized, 
@@ -41,5 +43,3 @@ This is highly advised before generating a solution as a copied dll may just end
 For help or more information please visit the associated thread on the forums below.
 Cry Engine &reg; Forum Thread: https://www.cryengine.com/community/viewtopic.php?f=314&t=135972
 GitHub &reg; Repository: https://github.com/uniflare/SplashExample
-
-Information regarding licensing is found in `license.txt` contained in this package.
