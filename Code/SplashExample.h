@@ -2,6 +2,8 @@
 // See bundled license.txt for more information.
 
 #pragma once
+#include "SplashExampleCVars.h"
+
 #include <CryRenderer/ITexture.h>
 #include <IPlayerProfiles.h>
 
@@ -27,32 +29,38 @@ class CSplashExample
 			, sResolution(_sResolution)
 		{}
 
-		SScreenResolution()
+		SScreenResolution() :
+			iWidth(-1)
+			, iHeight(-1)
+			, nDepthPerPixel(-1)
+			, sResolution("")
 		{}
 	};
 
-	//! The intial splash texture (before we can go fullscreen)
-	ITexture * m_pSplashTextureA;
+	SScreenResolution m_sFallbackResolution;
+
+	// Console variables provided by this object
+	SSplashExampleCVars * m_sCVars;
 
 	//! The loaded texture we will use to render to the screen
 	ITexture * m_pSplashTexture;
 
+	//! The intial splash texture (before we can go fullscreen)
+	ITexture * m_pInitialSplashTexture;
+
+	//! Simple flag to make sure we don't initialize more than once
+	bool m_bConstructed;
+
 	//! Simple flag to make sure we don't register/unregister our listener too many times
 	bool m_bListenerRegistered;
 
-	//! Store the user/game or system cfg resolution to restore it after
-	SScreenResolution m_sOriginalResolution;
-
-	//! Store the user/game or system cfg fullscreen value to restore it after
-	bool m_bOriginalFullscreen;
-
-	//! Store the user/game or system cfg window border value to restore it after
-	bool m_bOriginalFullscreenWindow;
-
 private:
 
+	//! Handles init of Splash Example. (Can only init once)
+	void TryConstruct();
+
 	//! Draws the supplied texture in stretched mode to the main viewport
-	void Draw2DImageScaled(const ITexture * tex, bool bUseTextureSize = false) const;
+	void Draw2DImage(const ITexture * tex, bool bUseTextureSize = false) const;
 
 	//! Wrapper to stall the current thread for LengthTime whilst drawing pTex
 	bool DrawAndStall(float StartTime, float LengthTime, ITexture * pTex, bool bUseTextureSize = false, bool bUpdateInput = true, bool bUpdateMouse = true, bool bDrawConsole = true, bool bPumpWinMsg = true);
@@ -69,11 +77,11 @@ private:
 	//! Generates a list of supported screen resolutions
 	const std::vector<SScreenResolution> GetScreenResolutions() const;
 
-	//! Handles our event listener (makes sure we only set/remove once each)
-	void RegisterListener(const bool bRegister);
-
 	//! Sets the r_width and r_height CVars if they are set properly in sResolution
-	void SetResolutionCVars(const SScreenResolution &sResolution) const;
+	void SetScreenResolution(const SScreenResolution &sResolution) const;
+
+	//! Self explanatory
+	void SafeReleaseSplashTextures();
 
 	// ISystemEventListener
 	virtual void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
@@ -81,6 +89,10 @@ private:
 
 public:
 
-	CSplashExample();
+	CSplashExample(SSplashExampleCVars * sCVars);
+
+	//! Only used to TryConstruct()
+	bool Initialize(SSystemGlobalEnvironment& env, const SSystemInitParams& initParams);
+
 	~CSplashExample();
 };

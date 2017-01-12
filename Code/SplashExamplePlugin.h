@@ -2,6 +2,7 @@
 // See bundled license.txt for more information.
 
 #pragma once
+#include "SplashExampleCVars.h"
 #include "SplashExample.h"
 
 #include <CrySystem/ICryPlugin.h>
@@ -11,30 +12,11 @@ class CSplashExample;
 class CPlugin_SplashExample 
 	: ICryPlugin
 {
-
 	// Console variables provided by this object
-	struct SSplashExampleCVars
-	{
-		int m_EnableSplash;
-		int m_EnableSplashInitial;
-		int m_StallSystemInit;
+	SSplashExampleCVars m_sCVars;
 
-		float m_MinPlaybackSecA;
-		float m_MinPlaybackSec;
-		float m_StartTimeOffset;
-
-		ICVar * m_pOverlayTexturePathA;
-		ICVar * m_pOverlayTexturePath;
-	} m_sCVars;
-
-	// reference to splash example logic
+	// reference to splash example implementation
 	CSplashExample * m_pSplashExample;
-
-	//! Registers CVars associated to this plugin
-	void RegisterCVars();
-
-	//! Unregisters CVars associated to this plugin
-	void UnregisterCVars();
 public:
 	CRYINTERFACE_SIMPLE(ICryPlugin)
 	CRYGENERATE_SINGLETONCLASS(CPlugin_SplashExample, "Plugin_SplashExample", 0xF77494CD6D0E44FE, 0xBEFBAA9E2CA27CB5)

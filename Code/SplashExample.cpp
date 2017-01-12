@@ -10,100 +10,227 @@
 #include <CryGame/IGameFramework.h>
 #include <IPlayerProfiles.h>
 
+// TODO:
+// 
+// Move construction to construct()
+// Store pointers to cvars on init.
+// 
+// Always register to system immediately - system will always be init'd.
+// 
+
 ///////////////////////////////////////////////////////////////////////////
-CSplashExample::CSplashExample()
-	: m_bListenerRegistered(false)
-	, m_pSplashTextureA(nullptr)
+CSplashExample::CSplashExample(SSplashExampleCVars * sCVars) :
+	m_sCVars(sCVars)
+	, m_bConstructed(false)
+	, m_bListenerRegistered(false)
 	, m_pSplashTexture(nullptr)
-	, m_sOriginalResolution(gEnv->pConsole->GetCVar("r_Width")->GetIVal(), gEnv->pConsole->GetCVar("r_Height")->GetIVal(), 32, "original") // compatibility
-	, m_bOriginalFullscreen((gEnv->pConsole->GetCVar("r_Fullscreen")->GetIVal() != 0)? true : false) // compatibility
-	, m_bOriginalFullscreenWindow((gEnv->pConsole->GetCVar("r_FullscreenWindow")->GetIVal() != 0) ? true : false)
+	, m_pInitialSplashTexture(nullptr)
 {
-	// Attempt to load our textures
-	if (gEnv->pConsole->GetCVar("splash_show_initial")->GetIVal() != 0)
-	{
-		if (gEnv->pCryPak->IsFileExist(gEnv->pConsole->GetCVar("splash_texture_a")->GetString()))
-			m_pSplashTextureA = gEnv->pRenderer->EF_LoadTexture(gEnv->pConsole->GetCVar("splash_texture_a")->GetString(), FT_DONT_STREAM | FT_NOMIPS);
-	}
-
-	if (gEnv->pConsole->GetCVar("splash_show")->GetIVal() != 0)
-	{
-		if (gEnv->pCryPak->IsFileExist(gEnv->pConsole->GetCVar("splash_texture")->GetString()))
-			m_pSplashTexture = gEnv->pRenderer->EF_LoadTexture(gEnv->pConsole->GetCVar("splash_texture")->GetString(), FT_DONT_STREAM | FT_NOMIPS);
-	}
-
-	if (gEnv->pConsole->GetCVar("splash_show_initial")->GetIVal() != 0)
-	{
-		// Set viewport to the same size as our initial splash size.
-		// This is a compatibility hack if user accidentally uses 
-		// cfg to set resolution/fullscreen (should use profile)
-		SetResolutionCVars(CSplashExample::SScreenResolution(m_pSplashTextureA->GetWidth(), m_pSplashTextureA->GetHeight(), 32, ""));
-		gEnv->pConsole->GetCVar("r_Fullscreen")->Set(0);
-		gEnv->pConsole->GetCVar("r_FullscreenWindow")->Set(1);
-	}
+	ISystem * pSystem = gEnv->pSystem;
 
 	// Register as a system event listener
-	RegisterListener(true);
+	if (!pSystem)
+	{
+		CRY_LOG_ERROR("SplashExamplePlugin: Cannot register system event listener. Skipping Construction.");
+		return;
+	}
+
+	// Try to initialize splash example
+	TryConstruct();
+}
+
+///////////////////////////////////////////////////////////////////////////
+bool CSplashExample::Initialize(SSystemGlobalEnvironment & env, const SSystemInitParams & initParams)
+{
+	// Try to initialize splash example
+	if(!m_bConstructed) TryConstruct();
+
+	return m_bConstructed;
+}
+
+///////////////////////////////////////////////////////////////////////////
+void CSplashExample::SafeReleaseSplashTextures()
+{
+	// Release our textures (-1 ref count)
+	if (m_pInitialSplashTexture)
+		m_pInitialSplashTexture->Release();
+
+	if (m_pSplashTexture)
+		m_pSplashTexture->Release();
+
+	m_pSplashTexture = m_pInitialSplashTexture = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////
 CSplashExample::~CSplashExample()
 {
-	// Release if necessary
-	if (m_pSplashTextureA)
-		m_pSplashTextureA->Release();
-
-	if (m_pSplashTexture)
-		m_pSplashTexture->Release();
-
-	m_pSplashTexture = m_pSplashTextureA = nullptr;
+	// Release our textures (-1 ref count)
+	SafeReleaseSplashTextures();
 
 	// Remove us from the event dispatcher system
-	RegisterListener(false);
+	if(m_bListenerRegistered)
+		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
+
+	m_bListenerRegistered = m_bConstructed = false;
+}
+
+///////////////////////////////////////////////////////////////////////////
+//! If plugin construction is ever moved upwards in system init, this will still be compatible.
+//! Also useful if any system/required components failed to init yet for any reason.
+void CSplashExample::TryConstruct()
+{
+	// Try to register our system listener, if we havn't managed to before now for some reason.
+	m_bListenerRegistered = (!m_bListenerRegistered)? gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this) : m_bListenerRegistered;
+
+	// Only init once (Listener is required to function properly)
+	if (!m_bConstructed && m_bListenerRegistered)
+	{
+		ICryPak * pCryPak = gEnv->pCryPak;
+		IConsole * pConsole = gEnv->pConsole;
+		IRenderer * pRenderer = gEnv->pRenderer;
+		ITimer * pTimer = gEnv->pTimer;
+
+		// Only construct if the system is in a state we can use
+		if (!pConsole)
+		{
+			CRY_LOG_DEBUG("SplashExamplePlugin: pConsole has not initialized yet. Skipping construction.");
+			return;
+		}
+
+		if(!pTimer)
+		{
+			CRY_LOG_DEBUG("SplashExamplePlugin: pTimer has not initialized yet. Skipping construction.");
+			return;
+		}
+
+		if (!pCryPak)
+		{
+			CRY_LOG_DEBUG("SplashExamplePlugin: pCryPak has not initialized yet. Skipping construction.");
+			return;
+		}
+
+		if (!pRenderer)
+		{
+			CRY_LOG_DEBUG("SplashExamplePlugin: pRenderer has not initialized yet. Skipping construction.");
+			return;
+		}
+
+		// We really need our cvars
+		if (!m_sCVars)
+		{
+			CRY_LOG_ERROR("SplashExamplePlugin: Null reference (CVars). Skipping construction.");
+			return;
+		}
+		if (!m_sCVars->m_bHasRegistered)
+		{
+			CRY_LOG_ERROR("SplashExamplePlugin: CVars have not been registered. Skipping construction.");
+			return;
+		}
+
+		// Attempt to load our intial splash texture from CVar
+		if (!m_pInitialSplashTexture && m_sCVars->m_iInitialSplashEnable > 0)
+		{
+			string InitialSplashTexturePath = m_sCVars->m_pInitialSplashTexturePath->GetString();
+
+			if (pCryPak->IsFileExist(InitialSplashTexturePath))
+			{
+				m_pInitialSplashTexture = pRenderer->EF_LoadTexture(InitialSplashTexturePath, FT_DONT_STREAM | FT_NOMIPS);
+				if (!m_pInitialSplashTexture)
+					CRY_LOG_ERROR("SplashExamplePlugin: Unable to load initial splash texture. Path '%s'", InitialSplashTexturePath);
+			}
+			else
+				CRY_LOG_ERROR("SplashExamplePlugin: Initial splash texture not found. Path: '%s'", InitialSplashTexturePath);
+		}
+
+		// Attempt to load our main splash texture from CVar
+		if (!m_pSplashTexture && m_sCVars->m_iMainSplashEnable > 0)
+		{
+			string SplashTexturePath = m_sCVars->m_pSplashTexturePath->GetString();
+			if (pCryPak->IsFileExist(SplashTexturePath))
+			{
+				m_pSplashTexture = pRenderer->EF_LoadTexture(SplashTexturePath, FT_DONT_STREAM | FT_NOMIPS);
+				if(!m_pSplashTexture)
+					CRY_LOG_ERROR("SplashExamplePlugin: Unable to load initial splash texture. Path '%s'", SplashTexturePath);
+			}
+			else
+				CRY_LOG_ERROR("SplashExamplePlugin: Splash texture not found. Path: '%s'", SplashTexturePath);
+		}
+
+		// Get a fallback resolution (from cvars)
+		int iWidth = pConsole->GetCVar("r_width")->GetIVal();
+		int iHeight = pConsole->GetCVar("r_height")->GetIVal();
+
+		if (iWidth > pRenderer->GetWidth())
+			iWidth = pRenderer->GetWidth();
+
+		if (iHeight > pRenderer->GetHeight())
+			iHeight = pRenderer->GetHeight();
+
+		m_sFallbackResolution = SScreenResolution(iWidth, iHeight, 32, string(CryStringUtils::toString(iWidth) + "x" + CryStringUtils::toString(iHeight)));
+
+		m_bConstructed = true;
+
+		CRY_LOG_DEBUG("SplashExamplePlugin: Constructed splash example.");
+
+		// Make sure console vars are set correctly for initial splash
+		if (m_pInitialSplashTexture)
+		{
+			// Set viewport to our initial splash texture size.
+			pConsole->GetCVar("r_width")->Set(m_pInitialSplashTexture->GetWidth());
+			pConsole->GetCVar("r_height")->Set(m_pInitialSplashTexture->GetHeight());
+			pConsole->GetCVar("r_fullscreen")->Set(0); // Force window mode (Note this may bring us our of fullscreen if not disabled in cfg).
+			pConsole->GetCVar("r_fullscreenwindow")->Set(1); // Remove window border (Note same problem if not enabled in cfg).
+			pConsole->GetCVar("sys_rendersplashscreen")->Set(0); // Disable built-in splash screen routine
+		}
+		else if(m_pSplashTexture)
+		{
+			pConsole->GetCVar("sys_rendersplashscreen")->Set(0); // Disable built-in splash screen routine
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
 //! Draws the supplied texture in stretched mode to the main viewport
-void CSplashExample::Draw2DImageScaled(const ITexture * tex, bool bUseTextureSize) const
+void CSplashExample::Draw2DImage(const ITexture * pTex, bool bUseTextureSize) const
 {
-	if (tex)
+	if (pTex)
 	{
-		int splashWidth = tex->GetWidth();
-		int splashHeight = tex->GetHeight();
+		int RenderWidth = gEnv->pRenderer->GetOverlayWidth();
+		int RenderHeight = gEnv->pRenderer->GetOverlayHeight();
+		int TextureWidth = pTex->GetWidth();
+		int TextureHeight = pTex->GetHeight();
 
-		int screenWidth;
-		int screenHeight;
+		float PosX = 0;
+		float PosY = 0;
 
-		if (splashWidth > 0 && splashHeight > 0)
+		if (TextureWidth > 0 && TextureHeight > 0 && RenderWidth > 0 && RenderHeight > 0)
 		{
-			if (!bUseTextureSize)
+			if (bUseTextureSize)
 			{
-				screenWidth = gEnv->pRenderer->GetOverlayWidth();
-				screenHeight = gEnv->pRenderer->GetOverlayHeight();
+				// Get Center offsets from window size
+				if (TextureWidth < RenderWidth)
+					PosX = (float)(int)((RenderWidth - TextureWidth) / 2); // raw cast to int to floor, then float to suppress warnings
+				if (TextureHeight < RenderHeight)
+					PosY = (float)(int)((RenderHeight - TextureHeight) / 2); // raw cast to int to floor, then float to suppress warnings
+
+				// Don't exceed renderable dimensions
+				RenderWidth = min(TextureWidth, RenderWidth);
+				RenderHeight = min(TextureHeight, RenderHeight);
 			}
-			else
+
+			gEnv->pRenderer->SetViewport(0, 0, RenderWidth, RenderHeight);
+
+			float fScaledW = RenderWidth / (float(RenderWidth) / 800.0f);
+			float fScaledH = RenderHeight / (float(RenderHeight) / 600.0f);
+
+			// make sure it's rendered in full screen mode when triple buffering is enabled as well
+			for (size_t n = 0; n < 3; n++)
 			{
-				screenWidth = tex->GetWidth();
-				screenHeight = tex->GetHeight();
-			}
-
-			if (screenWidth > 0 && screenHeight > 0)
-			{
-				// todo, center viewport
-				gEnv->pRenderer->SetViewport(0, 0, screenWidth, screenHeight);
-
-				float fScaledW = screenWidth / (float(screenWidth) / 800.0f);
-				float fScaledH = screenHeight / (float(screenHeight) / 600.0f);
-
-				// make sure it's rendered in full screen mode when triple buffering is enabled as well
-				for (size_t n = 0; n < 3; n++)
-				{
-					gEnv->pRenderer->SetCullMode(R_CULL_NONE);
-					gEnv->pRenderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
-					gEnv->pRenderer->Draw2dImageStretchMode(true);
-					gEnv->pRenderer->Draw2dImage(0, 0, fScaledW, fScaledH, tex->GetTextureID(), 0.0f, 1.0f, 1.0f, 0.0f);
-					gEnv->pRenderer->Draw2dImageStretchMode(false);
-				}
+				gEnv->pRenderer->SetCullMode(R_CULL_NONE);
+				gEnv->pRenderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
+				gEnv->pRenderer->Draw2dImageStretchMode(true);
+				gEnv->pRenderer->Draw2dImage(PosX, PosY, fScaledW, fScaledH, pTex->GetTextureID(), 0.0f, 1.0f, 1.0f, 0.0f);
+				gEnv->pRenderer->Draw2dImageStretchMode(false);
 			}
 		}
 	}
@@ -121,8 +248,6 @@ void CSplashExample::Draw2DImageScaled(const ITexture * tex, bool bUseTextureSiz
 //! bool bPumpWinMsg		Each loop/frame, handle any pumped window messages
 bool CSplashExample::DrawAndStall(float StartTime, float LengthTime, ITexture * pTex, bool bUseTextureSize, bool bUpdateInput, bool bUpdateMouse, bool bDrawConsole, bool bPumpWinMsg)
 {
-	CRY_ASSERT(pTex != nullptr);
-
 	if (pTex)
 	{
 		CSimpleThreadBackOff backoff;
@@ -131,6 +256,12 @@ bool CSplashExample::DrawAndStall(float StartTime, float LengthTime, ITexture * 
 			// Make sure we don't stall on app exit
 			if (gEnv->pSystem->IsQuitting())
 				break;
+
+			// Keep hiding cursor (needed for some reason)
+			if(!gEnv->pConsole->GetStatus())
+				gEnv->pSystem->GetIHardwareMouse()->Hide(true);
+			else
+				gEnv->pSystem->GetIHardwareMouse()->Hide(false);
 
 			// Make sure windows doesn't think our application has crashed
 			if (bPumpWinMsg) if (gEnv->pSystem->PumpWindowMessage(true) == -1) return false;
@@ -141,7 +272,7 @@ bool CSplashExample::DrawAndStall(float StartTime, float LengthTime, ITexture * 
 
 			// Render the splash image
 			gEnv->pRenderer->BeginFrame();
-			Draw2DImageScaled(pTex, bUseTextureSize); // Our overlay texture (can have alpha which is why we need background color)
+			Draw2DImage(pTex, bUseTextureSize); // Our overlay texture (can have alpha which is why we need background color)
 			if (bDrawConsole) gEnv->pConsole->Draw(); // Allow drawing of console while we stall
 			gEnv->pRenderer->EndFrame();
 
@@ -177,31 +308,36 @@ const IPlayerProfile * CSplashExample::GetCurrentPlayerProfile() const
 //! Gets the requested screen resolution from GetScreenResolutions()
 const CSplashExample::SScreenResolution CSplashExample::GetScreenResolution(const int idx) const
 {
-	auto ScreenResolutions = GetScreenResolutions();
+	static auto ScreenResolutions = GetScreenResolutions();
 
-#ifndef _RELEASE
-	CRY_ASSERT_MESSAGE(idx < ScreenResolutions.size(), "SplashExamplePlugin: idx is higher than supported, defaulting to highest available.");
-	CRY_ASSERT_MESSAGE(idx >= 0, "SplashExamplePlugin: GetScreenResolution() failed. idx was negative.");
-	CRY_ASSERT_MESSAGE(ScreenResolutions.size() > 0, "SplashExamplePlugin: Could not get available screen resolutions for display.");
-#endif
-
+	// Didn't get any resolution data for some reason
 	if (ScreenResolutions.size() <= 0)
-		return SScreenResolution();
+	{
+		CRY_LOG_ERROR("SplashExamplePlugin: Could not get available screen resolutions for display.");
+		return m_sFallbackResolution;
+	}
 
 	// If we don't have a resolution this high, get the highest available
 	if (idx >= ScreenResolutions.size() || idx < 0)
+	{
+		CRY_LOG_RELEASE("SplashExamplePlugin: idx is not supported, defaulting to highest available. ('%s')", ScreenResolutions[ScreenResolutions.size() - 1].sResolution);
 		return ScreenResolutions[ScreenResolutions.size() - 1];
+	}
 
 	return ScreenResolutions[idx];
 }
 
 //////////////////////////////////////////////////////////////////////////
 //! Generates a list of supported screen resolutions
+//! From GameSDK Sample
 const std::vector<CSplashExample::SScreenResolution> CSplashExample::GetScreenResolutions() const
 {
-	std::vector<SScreenResolution> s_ScreenResolutions;
+	static std::vector<SScreenResolution> ScreenResolutions;
 
 #if CRY_PLATFORM_DESKTOP
+
+	if (ScreenResolutions.size() > 0)
+		return ScreenResolutions;
 
 	CryFixedStringT<16> format;
 
@@ -217,7 +353,7 @@ const std::vector<CSplashExample::SScreenResolution> CSplashExample::GetScreenRe
 	{
 		bool bAlreadyExists = false;
 
-		for (auto &res : s_ScreenResolutions)
+		for (auto &res : ScreenResolutions)
 			if (res.iWidth == formats[i].m_Width && res.iHeight == formats[i].m_Height)
 				bAlreadyExists = true;
 
@@ -226,7 +362,7 @@ const std::vector<CSplashExample::SScreenResolution> CSplashExample::GetScreenRe
 
 		format.Format("%i X %i", formats[i].m_Width, formats[i].m_Height);
 
-		s_ScreenResolutions.emplace_back(formats[i].m_Width, formats[i].m_Height, formats[i].m_BPP, format.c_str());
+		ScreenResolutions.emplace_back(formats[i].m_Width, formats[i].m_Height, formats[i].m_BPP, format.c_str());
 	}
 
 	if (formats)
@@ -234,72 +370,61 @@ const std::vector<CSplashExample::SScreenResolution> CSplashExample::GetScreenRe
 
 #endif
 
-	return s_ScreenResolutions;
-}
-
-///////////////////////////////////////////////////////////////////////////
-//! Handles our event listener (makes sure we only set/remove once each way)
-void CSplashExample::RegisterListener(const bool bRegister) {
-	if (bRegister && !m_bListenerRegistered)
-		m_bListenerRegistered = GetISystem()->GetISystemEventDispatcher()->RegisterListener(this);
-	else if (!bRegister && m_bListenerRegistered)
-		m_bListenerRegistered = !GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
+	return ScreenResolutions;
 }
 
 ///////////////////////////////////////////////////////////////////////////
 //! Sets the r_width and r_height CVars if they are set properly in sResolution
-void CSplashExample::SetResolutionCVars(const SScreenResolution &sResolution) const
+void CSplashExample::SetScreenResolution(const SScreenResolution &res) const
 {
-	if (sResolution.iWidth > 0 && sResolution.iHeight > 0)
+
+	if (res.iWidth > 0 && res.iHeight > 0)
 	{
-		gEnv->pConsole->GetCVar("r_width")->Set(sResolution.iWidth);
-		gEnv->pConsole->GetCVar("r_height")->Set(sResolution.iHeight);
+		CRY_LOG_DEBUG("SplashExamplePlugin: Setting resolution to '%s'", res.sResolution);
+
+		gEnv->pConsole->GetCVar("r_width")->Set(res.iWidth);
+		gEnv->pConsole->GetCVar("r_height")->Set(res.iHeight);
+	}
+	else
+	{
+		CRY_LOG_ERROR("SplashExamplePlugin: Invalid resolution params supplied to SetScreenResolution(). (iWidth=%s,iHeight=%s)", res.iWidth, res.iHeight);
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
 void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam)
 {
+	// Construct at the earliest opportunity
+	// * This is a safe-guard if the plugins object construction
+	// * is moved before other systems have initialized.
+	// * (Currently in 5.3.0, Construction, Initialization, and 
+	// * ESYSTEM_EVENT_PRE_RENDERER_INIT are called at the same 
+	// * time in CSystem::Init)
 
 	if (event == ESYSTEM_EVENT_CVAR_REGISTERED || event == ESYSTEM_EVENT_CVAR_UNREGISTERED)
 		return;
+
+	CRY_LOG_DEBUG("SplashExamplePlugin: Debug OnSystemEvent. event = %s", CryStringUtils::toString(event));
+
+	if (!m_bConstructed) TryConstruct();
+	if (!m_bConstructed) return; // Only respond to events if we are ready to
 
 	switch (event)
 	{
 		// First stage, override startscreen, hide cursor and draw our gui splash (splash_a)
 	case ESYSTEM_EVENT_PRE_RENDERER_INIT:
 	{
-#ifndef _RELEASE
-		CRY_ASSERT_MESSAGE(
-			m_pSplashTextureA
-			&& gEnv->pConsole->GetCVar("sys_rendersplashscreen"),
-			"SplashExamplePlugin: Expected defaults for 'splash_texture_a' and 'sys_rendersplashscreen'."
-		);
-#endif
-
-		// Check if this game has startscreen enabled.
-		if (gEnv->pConsole->GetCVar("sys_rendersplashscreen")->GetIVal() == 1)
-			gEnv->pConsole->GetCVar("sys_rendersplashscreen")->Set(0); // override/disable
-
-		// Remove cursor immediately
-		gEnv->pSystem->GetIHardwareMouse()->Hide(true);
 
 		// Initial splash
-		if (gEnv->pConsole->GetCVar("splash_show_initial")->GetIVal() != 0)
+		if (m_pInitialSplashTexture)
 		{
-			SetResolutionCVars(CSplashExample::SScreenResolution(m_pSplashTextureA->GetWidth(), m_pSplashTextureA->GetHeight(), 32, ""));
-			gEnv->pConsole->GetCVar("r_Fullscreen")->Set(0);
+			// Hide cursor immediately
+			gEnv->pSystem->GetIHardwareMouse()->Hide(true);
 
-			// Draw our intial splash to window
-			if (m_pSplashTextureA) {
-				gEnv->pRenderer->BeginFrame();
-				Draw2DImageScaled(m_pSplashTextureA);
-				gEnv->pRenderer->EndFrame();
-			}
-			else
-			{
-				CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "SplashExamplePlugin: Missing texture '%s'", gEnv->pConsole->GetCVar("splash_texture_a")->GetString());
-			}
+			// Push a single frame with our texture to renderer
+			gEnv->pRenderer->BeginFrame();
+			Draw2DImage(m_pInitialSplashTexture, true);
+			gEnv->pRenderer->EndFrame();
 		}
 
 		break;
@@ -308,71 +433,40 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 	// Second stage, switch resolution, toggle fullscreen, start our main splash render
 	case ESYSTEM_EVENT_GAME_POST_INIT:
 	{
-#ifndef _RELEASE
-		CRY_ASSERT_MESSAGE(
-			m_pSplashTexture
-			&& gEnv->pConsole->GetCVar("r_height")
-			&& gEnv->pConsole->GetCVar("r_width")
-			&& gEnv->pConsole->GetCVar("r_fullscreen"),
-			"SplashExamplePlugin: Expected defaults for 'r_height', 'r_width', 'r_fullscreen' and 'splash_texture'."
-		);
-#endif
-
-		if (gEnv->pConsole->GetCVar("splash_show_initial")->GetIVal() != 0)
+		// Keep showing our initial splash screen
+		if (m_pInitialSplashTexture)
 		{
-			SetResolutionCVars(CSplashExample::SScreenResolution(m_pSplashTextureA->GetWidth(), m_pSplashTextureA->GetHeight(), 32, ""));
-			gEnv->pConsole->GetCVar("r_Fullscreen")->Set(0);
-
-			// Delay the initial viewport change for our initial splash time
-			if (m_pSplashTextureA)
-			{
-				// Stall the engine if we havn't shown our intial splash for enough time!
-				CryLogAlways("SplashExamplePlugin: Stalling thread for initial splash");
-
-				auto StartTime = gEnv->pTimer->GetAsyncCurTime();
-				auto LengthTime = gEnv->pConsole->GetCVar("splash_minimumPlaybackTimeA")->GetFVal();
-				DrawAndStall(StartTime, LengthTime, m_pSplashTextureA, true);
-
-				m_pSplashTextureA->Release();
-				m_pSplashTextureA = nullptr;
-			}
-			else
-			{
-				CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "SplashExamplePlugin: Missing texture '%s'", gEnv->pConsole->GetCVar("splash_texture")->GetString());
-			}
-
-			// Should stop here if quitting
-			if (gEnv->pSystem->IsQuitting())
-				break;
-
-			// Restore original cvars
-			gEnv->pConsole->GetCVar("r_Width")->Set(m_sOriginalResolution.iWidth);
-			gEnv->pConsole->GetCVar("r_Height")->Set(m_sOriginalResolution.iHeight);
-			gEnv->pConsole->GetCVar("r_Fullscreen")->Set(m_bOriginalFullscreen);
-			gEnv->pConsole->GetCVar("r_FullscreenWindow")->Set(m_bOriginalFullscreenWindow);
+			CRY_LOG_DEBUG("SplashExamplePlugin: Stalling thread for initial splash");
+			if (!DrawAndStall(gEnv->pTimer->GetAsyncCurTime(), m_sCVars->m_fInitialSplashPlaybackTime, m_pInitialSplashTexture, true)) break;
 		}
 
-		// Default to CVar values (system.cfg or game.cfg or user.cfg)
-		bool bFullscreen = (gEnv->pConsole->GetCVar("r_fullscreen")->GetIVal() > 0) ? true : false;
-		SScreenResolution ScreenResolution(gEnv->pConsole->GetCVar("r_width")->GetIVal(), gEnv->pConsole->GetCVar("r_height")->GetIVal(), 32, "DefaultResolution");
-
 		// GAMESDK/PROFILE SUPPORT //
-		auto pProfile = GetCurrentPlayerProfile();
+		SScreenResolution ScreenResolution = GetScreenResolution(-1); // default native res or fallback if no profile
 
 		// We need to set these cvars before we FlushRTCommands since they won't be set yet.
 		if (auto pProfile = GetCurrentPlayerProfile())
 		{
-			int userFS = GetAttributeIValue("Fullscreen", pProfile);
+			const int &userFS = GetAttributeIValue("Fullscreen", pProfile);
+			const int &userFSW = GetAttributeIValue("FullscreenWindow", pProfile);
+			const int &userRes = GetAttributeIValue("Resolution", pProfile);
+
 			if (userFS != -1)
 			{
-				CryLogAlways("SplashExamplePlugin: Setting Fullscreen CVar to profile setting ('%s')", CryStringUtils::toString(userFS));
-				gEnv->pConsole->ExecuteString("r_fullscreen " + CryStringUtils::toString(userFS));
+				gEnv->pConsole->GetCVar("r_fullscreen")->Set(userFS);
+				CRY_LOG_DEBUG("SplashExamplePlugin: Set Fullscreen CVar to profile setting ('%s')", CryStringUtils::toString(userFS));
 			}
 
-			int userRes = GetAttributeIValue("Resolution", pProfile);
-			auto res = GetScreenResolution(userRes);
-			CryLogAlways("SplashExamplePlugin: Settings resolution from profile setting to '%s', index '%s'", res.sResolution, CryStringUtils::toString(userRes));
-			SetResolutionCVars(res);
+			if (userFSW != -1)
+			{
+				gEnv->pConsole->GetCVar("r_fullscreenwindow")->Set(userFSW);
+				CRY_LOG_DEBUG("SplashExamplePlugin: Set FullscreenWindow CVar to profile setting ('%s')", CryStringUtils::toString(userFSW));
+			}
+
+			if (userRes != -1)
+			{
+				ScreenResolution = GetScreenResolution(userRes);
+				CRY_LOG_DEBUG("SplashExamplePlugin: Got splash resolution from profile setting ('%s')", ScreenResolution.sResolution);
+			}
 		}
 		else
 		{
@@ -380,19 +474,20 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 		}
 		// ~GAMESDK/PROFILE SUPPORT //
 
-		//This will set the window to fullscreen for us
+		SetScreenResolution(ScreenResolution);
+
+		// This will update the window using any changed cvars
 		gEnv->pRenderer->FlushRTCommands(false, true, true);
 
 		// Render the splash image (Drawing here helps with playback time accuracy)
 		if (m_pSplashTexture)
 		{
+			// Hide cursor again
+			gEnv->pSystem->GetIHardwareMouse()->Hide(true);
+
 			gEnv->pRenderer->BeginFrame();
-			Draw2DImageScaled(m_pSplashTexture); // Our overlay texture (can have alpha which is why we need background color)
+			Draw2DImage(m_pSplashTexture);
 			gEnv->pRenderer->EndFrame();
-		}
-		else
-		{
-			CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "SplashExamplePlugin: Missing texture '%s'", gEnv->pConsole->GetCVar("splash_texture")->GetString());
 		}
 
 		break;
@@ -401,45 +496,42 @@ void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR
 	// Third stage, Keep rendering splash image, and delay further loading until minimum playback time is achieved.
 	case ESYSTEM_EVENT_GAME_POST_INIT_DONE:
 	{
-#ifndef _RELEASE
-		CRY_ASSERT_MESSAGE(
-			m_pSplashTexture
-			&& gEnv->pConsole->GetCVar("splash_startTimeOffset")
-			&& gEnv->pConsole->GetCVar("splash_minimumPlaybackTime"),
-			"SplashExamplePlugin: Expected defaults for 'splash_startTimeOffset', 'splash_minimumPlaybackTime' and 'splash_texture'."
-		);
-#endif
-
-		// Set the start time for render, note this is not an accurate stamp 
-		// for when the image is actually rendered to the screen so we apply 
-		// an additional offset.
-		auto StartTime = gEnv->pTimer->GetAsyncCurTime() + gEnv->pConsole->GetCVar("splash_startTimeOffset")->GetFVal();
-
-		// Get the minimum playback time
-		auto LengthTime = gEnv->pConsole->GetCVar("splash_minimumPlaybackTime")->GetFVal();
-
 		if (m_pSplashTexture)
 		{
-			// Stall the engine if we havn't shown our splash for enough time!
-			CryLogAlways("SplashExamplePlugin: Stalling thread for splash");
+			// Hide cursor (if we havn't already)
+			gEnv->pSystem->GetIHardwareMouse()->Hide(false);
 
+			// Set the start time for render, note this is not an accurate stamp 
+			// for when the image is actually rendered to the screen so we can 
+			// apply an additional offset here.
+			float StartTime = gEnv->pTimer->GetAsyncCurTime() + m_sCVars->m_fStartTimeOffset;
+
+			// Get the minimum playback time
+			float LengthTime = m_sCVars->m_fSplashPlaybackTime;
+
+			CRY_LOG_DEBUG("SplashExamplePlugin: Stalling thread for splash, (start=%s,Length=%s)", CryStringUtils::toString(StartTime), CryStringUtils::toString(LengthTime));
+
+			// Stall the engine if we havn't shown our splash for enough time!
 			DrawAndStall(StartTime, LengthTime, m_pSplashTexture, false);
 		}
-		else
-		{
-			CryWarning(EValidatorModule::VALIDATOR_MODULE_GAME, EValidatorSeverity::VALIDATOR_ERROR, "SplashExamplePlugin: Missing texture '%s'", gEnv->pConsole->GetCVar("splash_texture")->GetString());
-		}
 
-		// Re-enable cursor
+		// Show cursor
 		gEnv->pSystem->GetIHardwareMouse()->Hide(false);
 
 		// We're done, de-register our system event handler
-		RegisterListener(false);
+		if (m_bListenerRegistered)
+		{
+			gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
+			m_bListenerRegistered = false;
+
+			CRY_LOG_DEBUG("SplashExamplePlugin: Unregistered system listener");
+		}
 
 		// Make sure we dont use this tex again!
-		if (m_pSplashTexture)
-			m_pSplashTexture->Release();
+		if (m_pSplashTexture) m_pSplashTexture->Release();
 		m_pSplashTexture = nullptr;
+
+		CRY_LOG_DEBUG("SplashExamplePlugin: End of splash example");
 	}
 	}
 }
