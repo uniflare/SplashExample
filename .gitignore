@@ -8,3 +8,6 @@
 cmake*
 *.sln
 *.lnk
+*.lib
+*.ilk
+*.exp
