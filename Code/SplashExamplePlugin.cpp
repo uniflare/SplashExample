@@ -42,4 +42,4 @@ bool CPlugin_SplashExample::Initialize(SSystemGlobalEnvironment& env, const SSys
 	return false;
 }
 
-CSingletonFactory<CPlugin_SplashExample> CPlugin_SplashExample::s_factory;
+CRYREGISTER_SINGLETON_CLASS(CPlugin_SplashExample)
