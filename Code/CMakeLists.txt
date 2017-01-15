@@ -22,6 +22,33 @@ if (${CMAKE_GENERATOR} MATCHES "^Visual Studio")
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 endif()
 
+# Set output directory for executable files
+if(CMAKE_CL_64)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x64")
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x64_release")
+else(CMAKE_CL_64)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x86")
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x86_release")
+endif(CMAKE_CL_64)
+
+# Set output directory for DLL files
+if(CMAKE_CL_64)
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x64")
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x64_release")
+else(CMAKE_CL_64)
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x86")
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x86_release")
+endif(CMAKE_CL_64)
+
+# Set output directory for LIB files
+if(CMAKE_CL_64)
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x64\\lib")
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x64_release\\lib")
+else(CMAKE_CL_64)
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x86\\lib")
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x86_release\\lib")
+endif(CMAKE_CL_64)
+
 option(OPTION_PCH "Enable Precompiled headers" ON)
 
 find_package (CryCommon REQUIRED)
