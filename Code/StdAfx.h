@@ -4,7 +4,7 @@
 #pragma once
 
 #ifndef _DEBUG
-//#define _RELEASE 1
+#define _RELEASE 1
 #endif
 
 #include <CryCore/Project/CryModuleDefs.h>
