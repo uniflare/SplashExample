@@ -7,6 +7,7 @@
   - Several CVars to control the plugin without building from source
     - CVar `splash_show` (def 1) Enable/Disable splash plugin
     - CVar `splash_show_initial` (def 1) Controls showing the intial splash image
+    - CVar `splash_show_main` (def 1) Controls showing the main (second) splash image
     - CVar `splash_minimumPlaybackTime` (def 10.0) Splash display time in seconds
     - CVar `splash_minimumPlaybackTimeA` (def 5.0) Initial splash display time in seconds
     - CVar `splash_startTimeOffset` (def 0.0) Allows for more accurate splash length
