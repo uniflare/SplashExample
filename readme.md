@@ -42,5 +42,5 @@ This is highly advised before generating a solution as a copied dll may just end
 
 ### More information
 For help or more information please visit the associated thread on the forums below.
-Cry Engine &reg; Forum Thread: https://www.cryengine.com/community/viewtopic.php?f=314&t=135972
+Cry Engine &reg; Forum Thread: https://www.cryengine.com/community_archive/viewtopic.php?f=314&t=135972
 GitHub &reg; Repository: https://github.com/uniflare/SplashExample
