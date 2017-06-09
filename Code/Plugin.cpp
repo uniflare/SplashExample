@@ -2,9 +2,10 @@
 // See bundled license.txt for more information.
 
 #include "StdAfx.h"
-#include "SplashExamplePlugin.h"
+#include "Plugin.h"
 
 ///////////////////////////////////////////////////////////////////////////
+//! Module constructor
 CPlugin_SplashExample::CPlugin_SplashExample()
 	: m_sCVars()
 	, m_pSplashExample(nullptr)
@@ -12,21 +13,15 @@ CPlugin_SplashExample::CPlugin_SplashExample()
 	// Skip if we are in the editor
 	if (gEnv->IsEditor())
 	{
-		CryLogAlways("SplashExample: Editor mode detected. Skipping splash example construction.");
+		CryLogAlways("SplashExample: Editor mode detected. Skipping splash example.");
 		return;
 	}
 
-	// Make sure we were able to register our cvars with pConsole
-	if (m_sCVars.m_bHasRegistered)
-	{
-		if (m_sCVars.m_iSplashEnable > 0)
-			m_pSplashExample = new CSplashExample(&m_sCVars);
-		else
-			CRY_LOG_DEBUG("SplashExamplePlugin: Splash example has been disabled by cvar 'splash_show'.");
-	}
+	m_pSplashExample = CryAlignedNew<CSplashExample>();
 }
 
 ///////////////////////////////////////////////////////////////////////////
+//! Module destructor
 CPlugin_SplashExample::~CPlugin_SplashExample()
 {
 	SAFE_DELETE(m_pSplashExample);
@@ -39,7 +34,7 @@ bool CPlugin_SplashExample::Initialize(SSystemGlobalEnvironment& env, const SSys
 {
 	if (m_pSplashExample)
 		return m_pSplashExample->Initialize(env, initParams);
-	return false;
+	return true;
 }
 
 CRYREGISTER_SINGLETON_CLASS(CPlugin_SplashExample)

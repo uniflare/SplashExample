@@ -2,7 +2,7 @@
 // See bundled license.txt for more information.
 
 #pragma once
-#include "SplashExampleCVars.h"
+#include "CVars.h"
 #include "SplashExample.h"
 
 #include <CrySystem/ICryPlugin.h>
@@ -13,7 +13,7 @@ class CPlugin_SplashExample
 	: ICryPlugin
 {
 	// Console variables provided by this object
-	SSplashExampleCVars m_sCVars;
+	CVars m_sCVars;
 
 	// reference to splash example implementation
 	CSplashExample * m_pSplashExample;
