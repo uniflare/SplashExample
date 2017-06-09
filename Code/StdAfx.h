@@ -3,22 +3,18 @@
 
 #pragma once
 
-#ifndef _DEBUG
-#define _RELEASE 1
-#endif
-
 #include <CryCore/Project/CryModuleDefs.h>
 #define eCryModule eCryM_EnginePlugin
 #define GAME_API   DLL_EXPORT
 
-#define CRY_LOG_RELEASE(...) CryLogAlways(##__VA_ARGS__)
+// Custom logging defines for readability
+#define CRY_LOG_ALWAYS(...) CryLogAlways(##__VA_ARGS__)
 #define CRY_LOG_ERROR(...) CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, ##__VA_ARGS__)
-
+#define CRY_LOG_DEBUG(...) CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_COMMENT, ##__VA_ARGS__)
 #ifdef _DEBUG
-#define CRY_LOG_DEBUG(...) CryLogAlways(##__VA_ARGS__)
+#define CRY_LOG_CALL(...) CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_COMMENT, ##__VA_ARGS__)
 #else
-//#define CRY_LOG_DEBUG(...) true
-#define CRY_LOG_DEBUG(...) true
+#define CRY_LOG_CALL(...) 0
 #endif
 
 #include <CryCore/Platform/platform.h>

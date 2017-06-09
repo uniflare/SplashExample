@@ -57,8 +57,9 @@ find_package (CryAction REQUIRED)
 set (SourceGroup_Main
 	"SplashExample.cpp"
 	"SplashExample.h"
-	"SplashExamplePlugin.cpp"
-	"SplashExamplePlugin.h"
+	"Plugin.cpp"
+	"Plugin.h"
+	"CVars.h"
 	"StdAfx.cpp"
 	"StdAfx.h"
 )
@@ -79,6 +80,10 @@ endif (OPTION_PCH AND MSVC)
 add_library(${PROJECT_NAME} MODULE ${SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE CryCommon CryAction)
+
+# Add _RELEASE define to release config
+target_compile_definitions(${PROJECT_NAME}
+  PUBLIC $<$<CONFIG:Release>:_RELEASE>)
 
 if (WIN32)
 	target_link_libraries(${PROJECT_NAME} PRIVATE Ntdll)
