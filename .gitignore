@@ -1,13 +1,10 @@
 # Build specific files, we only want source code tracked
+*.lib
 *.pdb
 /Solutions/*
 /Release/*
 /Backup/*
-/ext/*
-/ext/*
-cmake*
 *.sln
 *.lnk
-*.lib
 *.ilk
 *.exp
