@@ -15,7 +15,7 @@ endif()
 set (ProjectName "SplashExample")
 
 cmake_minimum_required (VERSION 3.6.0)
-project (${ProjectName} VERSION 1.3 LANGUAGES CXX)
+project (${ProjectName} VERSION 1.3.0 LANGUAGES CXX)
 
 if (${CMAKE_GENERATOR} MATCHES "^Visual Studio")
 	# Set startup project properties
