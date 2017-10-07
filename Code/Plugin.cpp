@@ -1,6 +1,11 @@
 // 05/01/2017 Copyright by Uniflare. All rights reserved.
 // See bundled license.txt for more information.
 
+#ifdef CRYGENERATE_SINGLETONCLASS_GUID
+// Included only once per DLL module.
+#include <CryCore/Platform/platform_impl.inl>
+#endif
+
 #include "StdAfx.h"
 #include "Plugin.h"
 
@@ -13,7 +18,12 @@ CPlugin_SplashExample::CPlugin_SplashExample()
 	// Skip if we are in the editor
 	if (gEnv->IsEditor())
 	{
-		CryLogAlways("SplashExample: Editor mode detected. Skipping splash example.");
+		CRY_LOG_ALWAYS("Editor mode detected. Skipping splash example.");
+		return;
+	}
+	else if (gEnv->IsDedicated())
+	{
+		CRY_LOG_ALWAYS("Dedicated mode detected. Skipping splash example.");
 		return;
 	}
 

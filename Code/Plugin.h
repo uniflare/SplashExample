@@ -9,7 +9,7 @@
 #include <CryEntitySystem/IEntityClass.h>
 
 class CSplashExample;
-class CPlugin_SplashExample 
+class CPlugin_SplashExample
 	: ICryPlugin
 {
 	// Console variables provided by this object
@@ -19,7 +19,13 @@ class CPlugin_SplashExample
 	CSplashExample * m_pSplashExample;
 public:
 	CRYINTERFACE_SIMPLE(ICryPlugin)
-	CRYGENERATE_SINGLETONCLASS(CPlugin_SplashExample, "Plugin_SplashExample", 0xF77494CD6D0E44FE, 0xBEFBAA9E2CA27CB5)
+#ifdef CRYGENERATE_SINGLETONCLASS_GUID
+	CRYGENERATE_SINGLETONCLASS_GUID(CPlugin_SplashExample, "Plugin_SplashExample", "{ F77494CD - 6D0E - 44FE - BEFB - AA9E2CA27CB5 }"_cry_guid)
+#else
+	// Backwards compatibility
+		CRYGENERATE_SINGLETONCLASS(CPlugin_SplashExample, "Plugin_SplashExample", 0xF77494CD6D0E44FE, 0xBEFBAA9E2CA27CB5)
+#endif
+
 
 	// ICryPlugin
 	virtual const char* GetName() const override { return "Splash Example Plugin"; }

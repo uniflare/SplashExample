@@ -33,13 +33,13 @@ struct CVars
 		, m_pInitialSplashTexturePath(nullptr)
 
 	{
-		CRY_LOG_CALL("SplashExamplePlugin: CVars::CVars()");
+		CRY_LOG_CALL("CVars::CVars()");
 	}
 	
 	// Unregister console variables
 	~CVars()
 	{
-		CRY_LOG_CALL("SplashExamplePlugin: CVars::~CVars()");
+		CRY_LOG_CALL("CVars::~CVars()");
 		assert(gEnv->pConsole);
 		if (!gEnv->pConsole) return;
 		
@@ -52,7 +52,7 @@ struct CVars
 		gEnv->pConsole->UnregisterVariable("splash_show_main");
 		gEnv->pConsole->UnregisterVariable("splash_show");
 
-		CRY_LOG_DEBUG("SplashExamplePlugin: Unregistered CVars.");
+		CRY_LOG_DEBUG("Unregistered CVars.");
 	}
 
 	bool Init()
@@ -69,7 +69,7 @@ struct CVars
 		m_pSplashTexturePath = REGISTER_STRING("splash_texture", "splashexample/textures/splash.dds", VF_CHEAT, "Sets the splash overlay texture to load");
 		m_pInitialSplashTexturePath = REGISTER_STRING("splash_texture_a", "splashexample/textures/splash_a.dds", VF_CHEAT, "Sets the initial splash overlay texture to load (before we go fullscreen)");
 
-		CRY_LOG_DEBUG("SplashExamplePlugin: Registered CVars.");
+		CRY_LOG_DEBUG("Registered CVars.");
 		return true;
 	}
 };

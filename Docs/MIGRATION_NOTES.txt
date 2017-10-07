@@ -1,0 +1,17 @@
+Copyright (c) 2017, uniflare, see Docs/license.txt for details
+Splash Example Plugin
+
+Some changes were made during a technical difficulty that resulted in the account associated with this plugin 
+on the marketplace to remove the submitted project. These changes are more on the technical side although 
+some further compatibility was ensured for 5.3 GameSDK project and end-user usage of the plugin was 
+generally made easier.
+
+# Usage differences
+	1. The project now comes with two test projects that use GameZero/GameSDK as "Host" projects.
+	2. Further documentation was added in 'Docs' folder.
+
+# Technical changes
+	*Some things may be missed, check github commits for more detailed information.
+	
+	1. The TestPlatform feature from the cmakelists file was defaulted to disabled to 
+	    prevent unwanted folders being created when building from source.

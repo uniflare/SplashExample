@@ -1,0 +1,17 @@
+{
+	"content": {
+		"assets": ["gamesdk"],
+		"libs": [{
+			"name": "CryGameSDK",
+			"shared": {
+				"win_x64": "CryGameSDK.dll"
+			}
+		}]
+	},
+	"info": {
+		"name": "CRYENGINE GAMESDK"
+	},
+	"require": {
+		"engine": "engine-5.3"
+	}
+}

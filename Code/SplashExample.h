@@ -175,7 +175,7 @@ private:
 	bool m_bSystemListenerRegistered;
 	bool m_bProfileListenerRegistered;
 	bool m_bLoadedProfileAttributes;
-	bool m_bIgnoreNextProfileSave; // in case we ever use this
+	bool m_bIgnoreNextProfileSave;
 	
 	//! Local refs
 	IPlayerProfileManager * m_pProfileManager;

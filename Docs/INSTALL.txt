@@ -1,0 +1,70 @@
+Copyright (c) 2017, uniflare, see Docs/license.txt for details
+Splash Example Plugin
+
+# Compatiblity
+	GameZero
+	GameSDK
+	Project templates
+
+# Pre-requisites
+	CRYENGINE version 5.3.x
+	
+    1. Compatible and working CRYENGINE installation either,
+        by the official CRYENGINE Launcher, or 
+        by building your own custom engine from source*
+    
+    2.  If using a project, that the project is working, and 
+         both the Splash Example project and your own project
+         uses the same CRYENGINE installation
+		 
+	3.  If building from source, the requirements match with 
+	        the target engine version requirements, eg;
+			Visual Studio 2015 + Win SDK 10586.
+
+# Testing with GameZero or GameSDK
+	1. (Right-Click) Launch Game using one of the provided cryproject files 
+		'SplashExamplePlugin_GameZero', or 'SplashExamplePlugin_GameSDK'
+		
+	Note: By default these projects are set to use the official engine 
+	    supplied by the 'CRYENGINE Launcher' application.
+
+# Installation/Integration into your project
+	
+	# Using pre-built binary for windows (x64 only)
+		1. CE 5.3 makes use of cryplugin.csv file to load required plugins for the project,
+		    you must make sure the line from the supplied file is added to the cryplugin.csv 
+			responsible for your desired project.
+		
+		2. This package contains custom texture assets that must be bundled with your desired 
+		    project assets, a simple 'drag & drop' from `Assets/SplashExamplePlugin` to 
+			to your `Project/Assets/SplashExamplePlugin` will suffice.
+		
+		3. Due to compatiblity reasons with the player profiles manager certain CVARS should 
+		    be set in either your system.cfg or game.cfg files in use by your project. To begin, 
+			some example CVARS are provided in the `Assets/SplashExample.cfg` file.
+		
+		4. Make sure the binary (SplashExample.dll) is bundled with your own project binary, 
+		    this should reside in `Project/bin/win_x64` directory next to any 'Game' dll.
+		
+	# Building Splash Example from source
+		1. Please take a look at the supplied `Code/cmakelists.txt` file for variables that 
+		    reference "TestPlatform". This is a feature tested with visual studio that allows 
+			the output binary to be directly copied to a target project binary folder. Default 
+			is disabled as the path will most certainly be innaccurate.
+		
+		2. If using a testplatform, the assets will still need to be copied to your projects assets.**
+		
+		3. As with other projects, simply use the 'SplashExamplePlugin.cryproject' file to generate 
+		    the solution, and modify/build using Visual Studio.
+    
+# Special Notes
+    *       Of course, due to the nature of custom engine builds, support cannot be given 
+	            for custom built and modified engine installations. You take responsibility 
+				to maintain compatiblity with your modifications and the plugin provided.
+	
+	**		This feature is experimental and may or may not be included with future iterations.
+				
+# WARNING
+	It is not reccommended to use the "Switch engine version" feature of the cryproject context menu 
+	for moving from or to different engine versions. Rather, only use this feature to swtich between 
+	locally registered engines of the same version, ie, 'Official 5.3.x' and 'Custom Built-From-Source 5.3.x'.

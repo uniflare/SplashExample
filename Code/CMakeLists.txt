@@ -1,16 +1,16 @@
-# CMakeGen template
+# Make sure you set these variables appropriately! (If using a host project)
 #
-# This file is used by CMakeGen as a template for 
-# generating the CMakeList.txt file required to 
-# build your cryengine 5 projects.
-#
-# Tested with CryEngine Release branch version 5.3
-#
-# Make sure you set these variables appropriately!
-#
+set (USE_TEST_PLATFORM_PROJECT "FALSE")
+
 set (TestPlatformRoot "C:/dev/git/sf/BLANKGAME")
 set (TestPlatformPath "${TestPlatformRoot}/bin/win_x64")
 set (TestPlatformProject "${TestPlatformRoot}/Game.cryproject")
+
+# Default to this project, if no test platform project is used
+if (NOT USE_TEST_PLATFORM_PROJECT)
+	set (TestPlatformProject "${PROJECT_FILE}")
+endif()
+
 set (ProjectName "SplashExample")
 
 cmake_minimum_required (VERSION 3.6.0)
@@ -85,12 +85,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE CryCommon CryAction)
 target_compile_definitions(${PROJECT_NAME}
   PUBLIC $<$<CONFIG:Release>:_RELEASE>)
 
-if (WIN32)
+if(WIN32)
 	target_link_libraries(${PROJECT_NAME} PRIVATE Ntdll)
 endif(WIN32)
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
-  COMMAND "${CMAKE_COMMAND}" -E copy 
-     "$<TARGET_FILE:${PROJECT_NAME}>"
-     "${TestPlatformPath}/$<TARGET_FILE_NAME:${PROJECT_NAME}>" 
-  COMMENT "Copying to test platform directory")
+if(USE_TEST_PLATFORM_PROJECT)
+	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
+	  COMMAND "${CMAKE_COMMAND}" -E copy 
+		 "$<TARGET_FILE:${PROJECT_NAME}>"
+		 "${TestPlatformPath}/$<TARGET_FILE_NAME:${PROJECT_NAME}>" 
+	  COMMENT "Copying to test platform directory")
+endif(USE_TEST_PLATFORM_PROJECT)

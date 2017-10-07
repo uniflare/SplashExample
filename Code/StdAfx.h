@@ -8,11 +8,12 @@
 #define GAME_API   DLL_EXPORT
 
 // Custom logging defines for readability
-#define CRY_LOG_ALWAYS(...) CryLogAlways(##__VA_ARGS__)
-#define CRY_LOG_ERROR(...) CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, ##__VA_ARGS__)
-#define CRY_LOG_DEBUG(...) CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_COMMENT, ##__VA_ARGS__)
+#define CRY_LOG_ALWAYS(...) CryLogAlways("[SplashExamplePlugin] " ##__VA_ARGS__)
+#define CRY_LOG_ERROR(...) CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "[SplashExamplePlugin] " ##__VA_ARGS__)
+#define CRY_LOG_WARNING(...) CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, "[SplashExamplePlugin] " ##__VA_ARGS__)
+#define CRY_LOG_DEBUG(...) CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_COMMENT, "[SplashExamplePlugin] " ##__VA_ARGS__)
 #ifdef _DEBUG
-#define CRY_LOG_CALL(...) CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_COMMENT, ##__VA_ARGS__)
+#define CRY_LOG_CALL(...) CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_COMMENT, "[SplashExamplePlugin] " ##__VA_ARGS__)
 #else
 #define CRY_LOG_CALL(...) 0
 #endif

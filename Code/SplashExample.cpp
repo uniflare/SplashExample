@@ -35,15 +35,7 @@ CSplashExample::~CSplashExample()
 {
 	SafeReleaseSplashTextures();
 	UnregisterProfileListener(this);
-
-	if (m_bSystemListenerRegistered)
-	{
-		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
-		CRY_LOG_DEBUG("SplashExamplePlugin: Unregistered system listener");
-	}
-
-	// flatten flags
-	m_bSystemListenerRegistered = m_bProfileListenerRegistered = m_bInitialized = false;
+	UnregisterSystemListener(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -77,10 +69,10 @@ void CSplashExample::SafeReleaseSplashTextures()
 //! Also useful if any system/required components failed to init yet for any reason.
 void CSplashExample::TryInitialize()
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::TryConstruct()");
+	CRY_LOG_CALL("CSplashExample::TryConstruct()");
 
 	// Try to register our system listener, if we havn't managed to before now for some reason.
-	m_bSystemListenerRegistered = (!m_bSystemListenerRegistered)? gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this) : m_bSystemListenerRegistered;
+	RegisterSystemListener(this);
 
 	// Only init once (Listener is required to function properly)
 	if (!m_bInitialized && m_bSystemListenerRegistered)
@@ -93,25 +85,25 @@ void CSplashExample::TryInitialize()
 		// Only construct if the system is in a state we can use
 		if (!pConsole)
 		{
-			CRY_LOG_DEBUG("SplashExamplePlugin: pConsole has not initialized yet. Skipping construction.");
+			CRY_LOG_DEBUG("pConsole has not initialized yet. Skipping construction.");
 			return;
 		}
 
 		if(!pTimer)
 		{
-			CRY_LOG_DEBUG("SplashExamplePlugin: pTimer has not initialized yet. Skipping construction.");
+			CRY_LOG_DEBUG("pTimer has not initialized yet. Skipping construction.");
 			return;
 		}
 
 		if (!pCryPak)
 		{
-			CRY_LOG_DEBUG("SplashExamplePlugin: pCryPak has not initialized yet. Skipping construction.");
+			CRY_LOG_DEBUG("pCryPak has not initialized yet. Skipping construction.");
 			return;
 		}
 
 		if (!pRenderer)
 		{
-			CRY_LOG_DEBUG("SplashExamplePlugin: pRenderer has not initialized yet. Skipping construction.");
+			CRY_LOG_DEBUG("pRenderer has not initialized yet. Skipping construction.");
 			return;
 		}
 
@@ -124,10 +116,10 @@ void CSplashExample::TryInitialize()
 			{
 				m_pInitialSplashTexture = pRenderer->EF_LoadTexture(InitialSplashTexturePath, FT_DONT_STREAM | FT_NOMIPS);
 				if (!m_pInitialSplashTexture)
-					CRY_LOG_ERROR("SplashExamplePlugin: Unable to load initial splash texture. Path '%s'", InitialSplashTexturePath);
+					CRY_LOG_ERROR("Unable to load initial splash texture. Path '%s'", InitialSplashTexturePath);
 			}
 			else
-				CRY_LOG_ERROR("SplashExamplePlugin: Initial splash texture not found. Path: '%s'", InitialSplashTexturePath);
+				CRY_LOG_ERROR("Initial splash texture not found. Path: '%s'", InitialSplashTexturePath);
 		}
 
 		// Attempt to load our main splash texture from CVar
@@ -138,10 +130,10 @@ void CSplashExample::TryInitialize()
 			{
 				m_pSplashTexture = pRenderer->EF_LoadTexture(SplashTexturePath, FT_DONT_STREAM | FT_NOMIPS);
 				if(!m_pSplashTexture)
-					CRY_LOG_ERROR("SplashExamplePlugin: Unable to load initial splash texture. Path '%s'", SplashTexturePath);
+					CRY_LOG_ERROR("Unable to load initial splash texture. Path '%s'", SplashTexturePath);
 			}
 			else
-				CRY_LOG_ERROR("SplashExamplePlugin: Splash texture not found. Path: '%s'", SplashTexturePath);
+				CRY_LOG_ERROR("Splash texture not found. Path: '%s'", SplashTexturePath);
 		}
 
 		if (m_pSplashTexture)
@@ -150,7 +142,7 @@ void CSplashExample::TryInitialize()
 		}
 
 		m_bInitialized = true;
-		CRY_LOG_DEBUG("SplashExamplePlugin: Constructed splash example.");
+		CRY_LOG_DEBUG("Constructed splash example.");
 	}
 }
 
@@ -158,7 +150,7 @@ void CSplashExample::TryInitialize()
 //! Handles the initial splash display.
 void CSplashExample::DisplayInitialSplash(bool stallThread)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::DisplayInitialSplash()");
+	CRY_LOG_CALL("CSplashExample::DisplayInitialSplash()");
 
 	if (m_pInitialSplashTexture)
 	{
@@ -188,7 +180,7 @@ void CSplashExample::DisplayInitialSplash(bool stallThread)
 		}
 		else 
 		{
-				CRY_LOG_DEBUG("SplashExamplePlugin: Stalling thread for initial splash");
+				CRY_LOG_DEBUG("Stalling thread for initial splash");
 				if (!DrawAndStall(gEnv->pTimer->GetAsyncCurTime(), m_sCVars.m_fInitialSplashPlaybackTime, m_pInitialSplashTexture, true))
 					return;
 		}
@@ -199,7 +191,7 @@ void CSplashExample::DisplayInitialSplash(bool stallThread)
 //! Handles the main splash display.
 void CSplashExample::DisplayMainSplash(const bool stallThread)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::DisplayMainSplash()");
+	CRY_LOG_CALL("CSplashExample::DisplayMainSplash()");
 
 	const SWindowProperties sWindowProperties = GetWindowProperties();
 
@@ -208,11 +200,11 @@ void CSplashExample::DisplayMainSplash(const bool stallThread)
 	if (!bSetCVars)
 	{
 		gEnv->pConsole->GetCVar("r_fullscreen")->Set(sWindowProperties.sWindowMode.bFullscreen);
-		CRY_LOG_DEBUG("SplashExamplePlugin: Set Fullscreen CVar to profile setting ('%s')", CryStringUtils::toString(sWindowProperties.sWindowMode.bFullscreen));
+		CRY_LOG_DEBUG("Set Fullscreen CVar to profile setting ('%s')", CryStringUtils::toString(sWindowProperties.sWindowMode.bFullscreen));
 		gEnv->pConsole->GetCVar("r_fullscreenwindow")->Set(sWindowProperties.sWindowMode.bHideWindowBorder);
-		CRY_LOG_DEBUG("SplashExamplePlugin: Set FullscreenWindow CVar to profile setting ('%s')", CryStringUtils::toString(sWindowProperties.sWindowMode.bHideWindowBorder));
+		CRY_LOG_DEBUG("Set FullscreenWindow CVar to profile setting ('%s')", CryStringUtils::toString(sWindowProperties.sWindowMode.bHideWindowBorder));
 		SetScreenResolution(sWindowProperties.sScreenResolution);
-		CRY_LOG_DEBUG("SplashExamplePlugin: Got splash resolution from profile setting ('%s')", sWindowProperties.sScreenResolution.sResolution);
+		CRY_LOG_DEBUG("Got splash resolution from profile setting ('%s')", sWindowProperties.sScreenResolution.sResolution);
 		bSetCVars = true;
 	}
 
@@ -240,7 +232,7 @@ void CSplashExample::DisplayMainSplash(const bool stallThread)
 			// Get the minimum playback time
 			float LengthTime = m_sCVars.m_fSplashPlaybackTime;
 
-			CRY_LOG_DEBUG("SplashExamplePlugin: Stalling thread for splash, (start=%s,Length=%s)", CryStringUtils::toString(StartTime), CryStringUtils::toString(LengthTime));
+			CRY_LOG_DEBUG("Stalling thread for splash, (start=%s,Length=%s)", CryStringUtils::toString(StartTime), CryStringUtils::toString(LengthTime));
 
 			// Stall the engine if we havn't shown our splash for enough time!
 			DrawAndStall(StartTime, LengthTime, m_pSplashTexture, false);
@@ -254,7 +246,7 @@ void CSplashExample::DisplayMainSplash(const bool stallThread)
 			if (m_pSplashTexture) m_pSplashTexture->Release();
 			m_pSplashTexture = nullptr;
 
-			CRY_LOG_DEBUG("SplashExamplePlugin: Finished main splash screen draw cycle.");
+			CRY_LOG_DEBUG("Finished main splash screen draw cycle.");
 		}
 	}
 }
@@ -324,7 +316,7 @@ void CSplashExample::Draw2DImage(const ITexture * pTex, bool bUseTextureSize) co
 //! bool bPumpWinMsg		Each loop/frame, handle any pumped window messages
 bool CSplashExample::DrawAndStall(float StartTime, float LengthTime, ITexture * pTex, bool bUseTextureSize, bool bUpdateInput, bool bUpdateMouse, bool bDrawConsole, bool bPumpWinMsg)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::DrawAndStall()");
+	CRY_LOG_CALL("CSplashExample::DrawAndStall()");
 
 	if (pTex)
 	{
@@ -366,9 +358,26 @@ bool CSplashExample::DrawAndStall(float StartTime, float LengthTime, ITexture * 
 //! Gets the user-defined, or default-defined window properties from PlayerProfiles.
 const CSplashExample::SWindowProperties CSplashExample::GetWindowProperties()
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::GetWindowProperties()");
+	CRY_LOG_CALL("CSplashExample::GetWindowProperties()");
 
-	assert(m_pDefaultProfile != nullptr);
+	if (m_pDefaultProfile == nullptr)
+	{
+		static bool warned = false;
+		if (!warned)
+		{
+			warned = true;
+			CRY_LOG_WARNING("Could not get default profile! Using native resolution.");
+
+			return SWindowProperties(
+				GetScreenResolution(-1),
+#if defined(_DEBUG) || defined(_PROFILE)
+				SWindowMode(0, 0)
+#else
+				SWindowMode(1, 0)
+#endif
+			);
+		}
+	}
 
 	// Revert to defaults from lib/config
 	auto pProfile = (m_pCurrentProfile) ? m_pCurrentProfile : m_pDefaultProfile;
@@ -396,21 +405,21 @@ const CSplashExample::SWindowProperties CSplashExample::GetWindowProperties()
 //! Gets the requested screen resolution from GetScreenResolutions()
 const CSplashExample::SScreenResolution CSplashExample::GetScreenResolution(const int idx)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::GetScreenResolution()");
+	CRY_LOG_CALL("CSplashExample::GetScreenResolution()");
 
 	static auto ScreenResolutions = CSplashExample::GetScreenResolutions();
 
 	// Didn't get any resolution data for some reason
 	if (ScreenResolutions.size() <= 0)
 	{
-		CRY_LOG_ERROR("SplashExamplePlugin: Could not get available screen resolutions for display.");
+		CRY_LOG_ERROR("Could not get available screen resolutions for display.");
 		return SScreenResolution();
 	}
 
 	// If we don't have a resolution this high, get the highest available
 	if (idx >= ScreenResolutions.size() || idx < 0)
 	{
-		CRY_LOG_ALWAYS("SplashExamplePlugin: idx is not supported, defaulting to highest available. ('%s')", ScreenResolutions[ScreenResolutions.size() - 1].sResolution);
+		CRY_LOG_ALWAYS("idx is not supported, defaulting to highest available. ('%s')", ScreenResolutions[ScreenResolutions.size() - 1].sResolution);
 		return ScreenResolutions[ScreenResolutions.size() - 1];
 	}
 
@@ -422,7 +431,7 @@ const CSplashExample::SScreenResolution CSplashExample::GetScreenResolution(cons
 //! From GameSDK Sample
 const std::vector<CSplashExample::SScreenResolution> CSplashExample::GetScreenResolutions()
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::GetScreenResolutions()");
+	CRY_LOG_CALL("CSplashExample::GetScreenResolutions()");
 
 	static std::vector<SScreenResolution> ScreenResolutions;
 
@@ -469,18 +478,18 @@ const std::vector<CSplashExample::SScreenResolution> CSplashExample::GetScreenRe
 //! Sets the r_width and r_height CVars if they are set properly in sResolution
 void CSplashExample::SetScreenResolution(const SScreenResolution &res) const
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::SetScreenResolution()");
+	CRY_LOG_CALL("CSplashExample::SetScreenResolution()");
 
 	if (res.iWidth > 0 && res.iHeight > 0)
 	{
-		CRY_LOG_DEBUG("SplashExamplePlugin: Setting resolution to '%s'", res.sResolution);
+		CRY_LOG_DEBUG("Setting resolution to '%s'", res.sResolution);
 
 		gEnv->pConsole->GetCVar("r_width")->Set(res.iWidth);
 		gEnv->pConsole->GetCVar("r_height")->Set(res.iHeight);
 	}
 	else
 	{
-		CRY_LOG_ERROR("SplashExamplePlugin: Invalid resolution params supplied to SetScreenResolution(). (iWidth=%s,iHeight=%s)", res.iWidth, res.iHeight);
+		CRY_LOG_ERROR("Invalid resolution params supplied to SetScreenResolution(). (iWidth=%s,iHeight=%s)", res.iWidth, res.iHeight);
 	}
 }
 
@@ -488,7 +497,7 @@ void CSplashExample::SetScreenResolution(const SScreenResolution &res) const
 //! Gets the Player Profile Manager interface
 IPlayerProfileManager * CSplashExample::GetIPlayerProfileManager()
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::GetIPlayerProfileManager()");
+	CRY_LOG_CALL("CSplashExample::GetIPlayerProfileManager()");
 
 	assert(gEnv->pGameFramework != nullptr);
 
@@ -503,7 +512,11 @@ IPlayerProfileManager * CSplashExample::GetIPlayerProfileManager()
 //! Gets the default player profile
 IPlayerProfile * CSplashExample::GetDefaultPlayerProfile(IPlayerProfileManager * pProfileManager)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::GetDefaultPlayerProfile()");
+	CRY_LOG_CALL("CSplashExample::GetDefaultPlayerProfile()");
+
+	if (!pProfileManager) return nullptr;
+
+	IPlayerProfile * pDefaultProfile = pProfileManager->GetDefaultProfile();
 
 	// Get the current user profile (or default if none)
 	return (pProfileManager) ? pProfileManager->GetDefaultProfile() : nullptr;
@@ -513,7 +526,7 @@ IPlayerProfile * CSplashExample::GetDefaultPlayerProfile(IPlayerProfileManager *
 //! Gets the currently used player profile
 IPlayerProfile * CSplashExample::GetCurrentPlayerProfile(IPlayerProfileManager * pProfileManager)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::GetCurrentPlayerProfile()");
+	CRY_LOG_CALL("CSplashExample::GetCurrentPlayerProfile()");
 
 	// Get the current user profile (or default if none)
 	return (pProfileManager) ? pProfileManager->GetCurrentProfile(pProfileManager->GetCurrentUser()) : nullptr;
@@ -523,7 +536,7 @@ IPlayerProfile * CSplashExample::GetCurrentPlayerProfile(IPlayerProfileManager *
 //! Sets the splash flag attribute & manually saves the profile
 bool CSplashExample::TryLoadProfileAttributes()
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::TryLoadProfileAttributes()");
+	CRY_LOG_CALL("CSplashExample::TryLoadProfileAttributes()");
 
 	// Attempt to get profile manager if we havn't already
 	m_pProfileManager = (!m_pProfileManager)? GetIPlayerProfileManager() : m_pProfileManager;
@@ -551,7 +564,7 @@ bool CSplashExample::TryLoadProfileAttributes()
 						// First launch of game, copy defaults (libs/config) to the current profile.
 						if (!CopyProfileAttributes(/* To */ m_pCurrentProfile, /* From */ m_pDefaultProfile))
 						{
-							CRY_LOG_ERROR("SplashExamplePlugin: Could not copy default profile attributes to '%s'.).", m_pCurrentProfile->GetName());
+							CRY_LOG_ERROR("Could not copy default profile attributes to '%s'.).", m_pCurrentProfile->GetName());
 						}
 					}
 					else
@@ -562,7 +575,7 @@ bool CSplashExample::TryLoadProfileAttributes()
 						// Add the splashflag to this profile to prevent overwriting the window preoperties later.
 						if (!SaveSplashFlagToProfile())
 						{
-							CRY_LOG_ERROR("SplashExamplePlugin: Could not save splash flag to profile '%s'.", m_pCurrentProfile->GetName());
+							CRY_LOG_ERROR("Could not save splash flag to profile '%s'.", m_pCurrentProfile->GetName());
 						}
 					}
 				}
@@ -578,6 +591,8 @@ bool CSplashExample::TryLoadProfileAttributes()
 		else
 		{
 			// Could not get default profile
+
+
 			return false;
 		}
 	}
@@ -593,7 +608,7 @@ bool CSplashExample::TryLoadProfileAttributes()
 //! Copies profile attributes from one profile to the other
 bool CSplashExample::CopyProfileAttributes(IPlayerProfile * pTo, IPlayerProfile * pFrom)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::CopyProfileAttributes()");
+	CRY_LOG_CALL("CSplashExample::CopyProfileAttributes()");
 
 	assert(pTo != nullptr);
 	assert(pFrom != nullptr);
@@ -613,7 +628,7 @@ bool CSplashExample::CopyProfileAttributes(IPlayerProfile * pTo, IPlayerProfile 
 		pFrom->GetAttribute(desc.name, value);
 		if (!pTo->SetAttribute(desc.name, value))
 		{
-			CRY_LOG_ERROR("SplashExamplePlugin: Could not set default attribute to current profile.");
+			CRY_LOG_ERROR("Could not set default attribute to current profile.");
 			ok = false;
 		}
 	}
@@ -624,13 +639,13 @@ bool CSplashExample::CopyProfileAttributes(IPlayerProfile * pTo, IPlayerProfile 
 //! Sets the splash flag attribute on the current profile
 bool CSplashExample::SetProfileAttribute(const char * attributeName, const TFlowInputData attributeValue)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::SetProfileAttribute()");
+	CRY_LOG_CALL("CSplashExample::SetProfileAttribute()");
 	return m_pCurrentProfile->SetAttribute(attributeName, attributeValue);
 }
 template <class T>
 bool CSplashExample::SetProfileAttribute(const char * attributeName, const T& attributeValue)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::SetProfileAttribute<T>()");
+	CRY_LOG_CALL("CSplashExample::SetProfileAttribute<T>()");
 	return m_pCurrentProfile->SetAttribute(attributeName, attributeValue);
 }
 
@@ -638,7 +653,7 @@ bool CSplashExample::SetProfileAttribute(const char * attributeName, const T& at
 //! Sets the splash flag attribute & manually saves the profile
 bool CSplashExample::SaveSplashFlagToProfile()
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::SaveSplashFlagToProfile()");
+	CRY_LOG_CALL("CSplashExample::SaveSplashFlagToProfile()");
 
 	if (!SetProfileAttribute("SplashFlag_FirstRun", 0))
 		return false;
@@ -654,7 +669,7 @@ bool CSplashExample::SaveSplashFlagToProfile()
 //! Manually saves the current profile
 bool CSplashExample::SavePlayerProfile(EPOResult &result, EProfileReasons reason)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::SavePlayerProfile()");
+	CRY_LOG_CALL("CSplashExample::SavePlayerProfile()");
 
 	assert(m_pProfileManager != nullptr);
 	assert(m_pCurrentProfile != nullptr);
@@ -676,7 +691,7 @@ bool CSplashExample::SavePlayerProfile(EPOResult &result, EProfileReasons reason
 //! Registers the player profile listener if not registered
 bool CSplashExample::RegisterProfileListener(IPlayerProfileListener * pListener)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::RegisterProfileListener()");
+	CRY_LOG_CALL("CSplashExample::RegisterProfileListener()");
 	assert(pListener);
 
 	if (!m_bProfileListenerRegistered)
@@ -686,11 +701,11 @@ bool CSplashExample::RegisterProfileListener(IPlayerProfileListener * pListener)
 		{
 			pMan->AddListener(pListener, false);
 			m_bProfileListenerRegistered = true;
-			CRY_LOG_DEBUG("SplashExamplePlugin: Registered Profile Manager Listener.");
+			CRY_LOG_DEBUG("Registered Profile Manager Listener.");
 		}
 		else
 		{
-			CRY_LOG_DEBUG("SplashExamplePlugin: Profile Manager not available, could not register listener.");
+			CRY_LOG_DEBUG("Profile Manager not available, could not register listener.");
 		}
 	}
 
@@ -701,7 +716,7 @@ bool CSplashExample::RegisterProfileListener(IPlayerProfileListener * pListener)
 //! De-Registers the player profile listener
 bool CSplashExample::UnregisterProfileListener(IPlayerProfileListener * pListener)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::UnregisterProfileListener()");
+	CRY_LOG_CALL("CSplashExample::UnregisterProfileListener()");
 	assert(pListener);
 
 	if (m_bProfileListenerRegistered)
@@ -711,11 +726,11 @@ bool CSplashExample::UnregisterProfileListener(IPlayerProfileListener * pListene
 		{
 			pMan->RemoveListener(pListener);
 			m_bProfileListenerRegistered = false;
-			CRY_LOG_DEBUG("SplashExamplePlugin: Unregistered Profile Manager Listener.");
+			CRY_LOG_DEBUG("Unregistered Profile Manager Listener.");
 		}
 		else
 		{
-			CRY_LOG_ERROR("SplashExamplePlugin: Profile manager destructed before removing listener.");
+			CRY_LOG_ERROR("Profile manager destructed before removing listener.");
 		}
 	}
 
@@ -726,7 +741,7 @@ bool CSplashExample::UnregisterProfileListener(IPlayerProfileListener * pListene
 //! Registers the system event listener if not registered
 bool CSplashExample::RegisterSystemListener(ISystemEventListener * pListener)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::RegisterSystemListener()");
+	CRY_LOG_CALL("CSplashExample::RegisterSystemListener()");
 	assert(pListener);
 
 	if (!m_bSystemListenerRegistered)
@@ -736,18 +751,22 @@ bool CSplashExample::RegisterSystemListener(ISystemEventListener * pListener)
 			auto pDispatcher = gEnv->pSystem->GetISystemEventDispatcher();
 			if (pDispatcher)
 			{
+#ifdef CRYGENERATE_SINGLETONCLASS_GUID
+				pDispatcher->RegisterListener(pListener, "SplashExampleSystem");
+#else
 				pDispatcher->RegisterListener(pListener);
+#endif
 				m_bSystemListenerRegistered = true;
-				CRY_LOG_DEBUG("SplashExamplePlugin: Registered System Event Listener.");
+				CRY_LOG_DEBUG("Registered System Event Listener.");
 			}
 			else
 			{
-				CRY_LOG_DEBUG("SplashExamplePlugin: System Event Dispatcher not available, could not register listener.");
+				CRY_LOG_DEBUG("System Event Dispatcher not available, could not register listener.");
 			}
 		}
 		else
 		{
-			CRY_LOG_DEBUG("SplashExamplePlugin: Profile Manager not available, could not register listener.");
+			CRY_LOG_DEBUG("Profile Manager not available, could not register listener.");
 		}
 	}
 
@@ -758,7 +777,7 @@ bool CSplashExample::RegisterSystemListener(ISystemEventListener * pListener)
 //! De-Registers the system event listener
 bool CSplashExample::UnregisterSystemListener(ISystemEventListener * pListener)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::UnregisterSystemListener()");
+	CRY_LOG_CALL("CSplashExample::UnregisterSystemListener()");
 	assert(pListener);
 
 	if (m_bSystemListenerRegistered)
@@ -770,16 +789,16 @@ bool CSplashExample::UnregisterSystemListener(ISystemEventListener * pListener)
 			{
 				pDispatcher->RemoveListener(pListener);
 				m_bSystemListenerRegistered = false;
-				CRY_LOG_DEBUG("SplashExamplePlugin: Unregistered System Event Listener.");
+				CRY_LOG_DEBUG("Unregistered System Event Listener.");
 			}
 			else
 			{
-				CRY_LOG_ERROR("SplashExamplePlugin: System Event Dispatcher destructed before removing listener.");
+				CRY_LOG_ERROR("System Event Dispatcher destructed before removing listener.");
 			}
 		}
 		else
 		{
-			CRY_LOG_ERROR("SplashExamplePlugin: System destructed before removing listener.");
+			CRY_LOG_ERROR("System destructed before removing listener.");
 		}
 	}
 
@@ -790,7 +809,7 @@ bool CSplashExample::UnregisterSystemListener(ISystemEventListener * pListener)
 //! Listener: 
 void CSplashExample::SaveToProfile(IPlayerProfile* pProfile, bool online, unsigned int /*EProfileReasons*/ reason)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::SaveToProfile()");
+	CRY_LOG_CALL("CSplashExample::SaveToProfile()");
 
 	if (m_bIgnoreNextProfileSave)
 	{
@@ -806,7 +825,7 @@ void CSplashExample::SaveToProfile(IPlayerProfile* pProfile, bool online, unsign
 //! Listener: Ensures loaded profiles have the splash flag.
 void CSplashExample::LoadFromProfile(IPlayerProfile* pProfile, bool online, unsigned int /*EProfileReasons*/ reason)
 {
-	CRY_LOG_CALL("SplashExamplePlugin: CSplashExample::LoadFromProfile()");
+	CRY_LOG_CALL("CSplashExample::LoadFromProfile()");
 
 	if (!pProfile->IsDefault())
 	{
@@ -821,11 +840,8 @@ void CSplashExample::LoadFromProfile(IPlayerProfile* pProfile, bool online, unsi
 //! Listener: All splash operations are dispatched from this method
 void CSplashExample::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam)
 {
-	// Skip these
-	if (event == ESYSTEM_EVENT_CVAR_REGISTERED || event == ESYSTEM_EVENT_CVAR_UNREGISTERED)
-		return;
 
-	CRY_LOG_CALL("SplashExamplePlugin: Debug OnSystemEvent. event = %s", SYSEVENT_CODE_TO_TEXT(event));
+	CRY_LOG_CALL("Debug OnSystemEvent. event = %s", SYSEVENT_CODE_TO_TEXT(event));
 
 	// Unlink listeners if we notice a shutdown (CE Registry Destruction Bug)
 	if (IsShuttingDown()) return;

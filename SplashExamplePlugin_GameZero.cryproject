@@ -1,0 +1,17 @@
+{
+	"content": {
+		"assets": ["gamezero"],
+		"libs": [{
+			"name": "CryGameZero",
+			"shared": {
+				"win_x64": "CryGameZero.dll"
+			}
+		}]
+	},
+	"info": {
+		"name": "CRYENGINE GAMEZERO"
+	},
+	"require": {
+		"engine": "engine-5.3"
+	}
+}

@@ -1,0 +1,76 @@
+Copyright (c) 2017, uniflare, see Docs/license.txt for details
+Splash Example Plugin
+
+This file explains the idea or 'concept' of the Splash Example Plugin,
+as well as an overview of the internal implementation details.
+
+# Boring stuff
+	The reason this plugin came about is mainly as an exercise to myself, it gave 
+	me a problem to solve, that seemed basic but functional.
+	
+	This project was fun to make and although this project is technically not 
+	vetted for production release it was taken into consideration.
+	
+# Initial concept
+    The idea was to use the CryCommon exposed 2d rendering routines to display 
+    a fullwindow* image upon starting the engine for a configurable amount of time, 
+    whilst remaining as compatible as is reasonable and/or possible.
+	
+# Evolution
+    Concept was expanded to include a borderless windowed image to display 
+    a (old-school) splash picture preceeding a (expected) larger or fullscreen window.
+	
+# Implementation
+    
+    # Restrictions:
+        - Only works in game mode (not editor/dedicated server)
+        - Resolution CVARS must be set correctly to avoid switching window properties.
+            (Due to the fact plugins/projects are loaded/initialized after the renderer module)
+        - Only compatible with engine-compatible Windows platform
+        - Uses the player profile attributes system to store data for GameSDK compatibility**
+		- Untested with multi-display single-desktop span configurations. Probably will not work in these cases.
+
+	# Initialization
+		Uses system events to try to determine the earliest point in engine init to init required data 
+		    for the splash example plugin. Essentially this is to make it compatible with future changes 
+			of the initialization ordering between plugins and the engine itself. (For ex, if the plugin 
+			system if moved before renderer in the initialization of the engine).
+		
+	# Internals
+		Uses the `gEnv->pRenderer->Draw2dImage(...)` internally to draw bitmaps to the screen.
+		Textures are loaded using `pRenderer->EF_LoadTexture(...)`
+		Delay/Stall is handled via simple blocking `while(...)` loop with `gEnv->pTimer->GetAsyncCurTime()`, cpu time 
+		    is minimized by making use of `CSimpleThreadBackOff` struct provided by the engine interfaces.
+		During stall, window events and other interupt message (input) routines are explicitly signaled inside 
+		    the stalling routine to allow (if wanted) console access and prevent erroneous 'Not Responding' 
+			messages from windows.
+		Textures are released immediately after display so the render thread can discard the data at the most 
+		    appropriate time.
+		Uses `gEnv->pRenderer->EnumDisplayFormats(NULL)` to get the compatible display formats for the current primary device.
+		Hooks into Player Profile updates to ensure switching between profiles will not cause undesired effects if the 
+		    profile loaded/saved does not include the splash flag as this could override user-set rendering properties.
+		Attempts to catch shutdown signals via system events to unregister routines that could cause issues during shutdown.
+		Makes use of some custom CVARS for easier configuration of the splash routines.
+		
+	# CVARS
+		Due to the initial splash screen not able to initialize before the renderer module, the r_width and r_height cvars 
+		    ideally should match the size of your initial splash image (if using).
+		Some CVARS are marked 'VF_CHEAT' to restrict modification in pure-client release builds to prevent end-users from 
+		    supplying or overriding the textures used.
+
+# Compatibility
+	Emphasis on compatiblity is prevelant and is always a concern for bloat. For this reason, only the current major engine version 
+	    will receive updates and new features. The minimum compatibility criteria includes compatiblity with all projects designed 
+		for the current engine version targeted by the plugin. This should encompass GameZero/GameSDK and official template projects.
+		Testing is done for GameZero/GameSDK and the C++ FPS template project - subject to project availability in the targeted 
+		engine version.
+		
+# Special Notes
+    *       fullwindow by my meaning corresponds to the viewable, or renderable portion of the current active viewport or window.
+	**      Caveats for this integration is:
+	            1. Cannot use a player profile attribute named `SplashFlag_FirstRun`. This attribute is used internally.
+				2. If the splash flag is not set, and the default profile resolution is desired to be lowest possible setting, 
+				    the resolution will be assumed to be wrong, and will override with the native resolution of the monitor.
+				3. Assumes CVARS like `r_width`/`r_fullscreen` etc to be used for the splash itself, whereas the attributes similarly 
+				    named in the player profile (default or otherwise) to be the actual desired window rendering properties. This 
+					applies to all projects that use this plugin, not just the GameSDK.
