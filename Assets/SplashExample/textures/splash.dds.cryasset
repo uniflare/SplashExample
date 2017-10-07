@@ -1,8 +1,10 @@
-<cryasset>
- <AssetMetadata version="0" type="Texture" guid="{417C86B0-FF6E-73EE-066F-96ED737C7290}" source="splash.tif">
-  <Files>
-   <File path="splash.dds"/>
-  </Files>
-  <Details />
- </AssetMetadata>
-</cryasset>
+<AssetMetadata version="0" type="Texture" guid="21b1b9d5-37c8-59b4-f928-9dcad8cb4daf" source="Splash.tif">
+ <Files>
+  <File path="Splash.dds"/>
+ </Files>
+ <Details>
+  <Detail name="width">2560</Detail>
+  <Detail name="height">1440</Detail>
+  <Detail name="mipCount">1</Detail>
+ </Details>
+</AssetMetadata>

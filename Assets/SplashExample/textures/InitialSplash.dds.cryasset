@@ -1,0 +1,10 @@
+<AssetMetadata version="0" type="Texture" guid="7defecd0-5d39-6e1f-5667-2c561093b67b" source="InitialSplash.tif">
+ <Files>
+  <File path="InitialSplash.dds"/>
+ </Files>
+ <Details>
+  <Detail name="width">512</Detail>
+  <Detail name="height">300</Detail>
+  <Detail name="mipCount">1</Detail>
+ </Details>
+</AssetMetadata>
