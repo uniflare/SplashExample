@@ -1,3 +1,4 @@
+# Copyright (c) 2017, uniflare, see LICENSE.txt for details
 # Make sure you set these variables appropriately! (If using a host project)
 #
 set (USE_TEST_PLATFORM_PROJECT "FALSE")

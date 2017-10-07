@@ -1,5 +1,4 @@
-// 11/01/2017 Copyright by Uniflare. All rights reserved.
-// See bundled license.txt for more information.
+// Copyright (c) 2017, uniflare, see LICENSE.txt for details
 #pragma once
 
 #include <CrySystem\ISystem.h>
