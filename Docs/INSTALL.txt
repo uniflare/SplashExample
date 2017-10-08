@@ -51,8 +51,8 @@ Splash Example Plugin
 			responsible for your desired project.
 		
 		2. This package contains custom texture assets that must be bundled with your desired 
-		    project assets, a simple 'drag & drop' from `Assets/SplashExamplePlugin` to 
-			to your `Project/Assets/SplashExamplePlugin` will suffice.
+		    project assets, a simple 'drag & drop' from `Assets/SplashExample` to 
+			to your `Project/Assets/SplashExample` will suffice.
 		
 		3. Due to compatiblity reasons with the player profiles manager certain CVARS should 
 		    be set in either your system.cfg or game.cfg files in use by your project. To begin, 
