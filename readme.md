@@ -23,11 +23,11 @@ Copyright (c) 2017, uniflare, see LICENSE.txt for details
     **  Assumes that the example plugin package is compatible with the target engine.
 
 ### Quick Start
-If you want to see it in action immediately, right-click and select 'Launch Game' on either;*
-	- SplashExamplePlugin_GameSDK.cryproject
-	- SplashExamplePlugin_GameZero.cryproject
+If you want to see it in action immediately, right-click and select 'Launch Game' on any cryproject file*
 	
-    *   Assumes compatible engines have been installed via the CRYENGINE Launcher
+    *   Assumes compatible engines have been installed via the CRYENGINE Launcher,
+	        also assumes the necessary assets folder exists in the projects root and contains the splash 
+			example textures.
 
 ### Integration with a project
 Integration consists of a several requierd steps to combine the splash plugin with an external project. For 
