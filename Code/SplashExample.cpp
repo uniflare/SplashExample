@@ -324,31 +324,31 @@ bool CSplashExample::DrawAndStall(float StartTime, float LengthTime, ITexture * 
 		while (gEnv->pTimer->GetAsyncCurTime() - LengthTime <= StartTime) {
 
 			// Make sure we don't stall on app exit
-			if (IsShuttingDown())
-				break;
+if (IsShuttingDown())
+break;
 
-			// Keep hiding cursor (needed for some reason)
-			if(!gEnv->pConsole->GetStatus())
-				gEnv->pSystem->GetIHardwareMouse()->Hide(true);
-			else
-				gEnv->pSystem->GetIHardwareMouse()->Hide(false);
+// Keep hiding cursor (needed for some reason)
+if (!gEnv->pConsole->GetStatus())
+gEnv->pSystem->GetIHardwareMouse()->Hide(true);
+else
+gEnv->pSystem->GetIHardwareMouse()->Hide(false);
 
-			// Make sure windows doesn't think our application has crashed
-			if (bPumpWinMsg) if (gEnv->pSystem->PumpWindowMessage(true) == -1) return false;
+// Make sure windows doesn't think our application has crashed
+if (bPumpWinMsg) if (gEnv->pSystem->PumpWindowMessage(true) == -1) return false;
 
-			// Update input events so we don't get any windows cursors during our splash
-			if (bUpdateInput) gEnv->pInput->Update(true);
-			if (bUpdateMouse) gEnv->pSystem->GetIHardwareMouse()->Update();
+// Update input events so we don't get any windows cursors during our splash
+if (bUpdateInput) gEnv->pInput->Update(true);
+if (bUpdateMouse) gEnv->pSystem->GetIHardwareMouse()->Update();
 
-			// Render the splash image
-			gEnv->pRenderer->BeginFrame();
-			Draw2DImage(pTex, bUseTextureSize); // Our overlay texture (can have alpha which is why we need background color)
-			if (bDrawConsole) gEnv->pConsole->Draw(); // Allow drawing of console while we stall
-			gEnv->pRenderer->EndFrame();
+// Render the splash image
+gEnv->pRenderer->BeginFrame();
+Draw2DImage(pTex, bUseTextureSize); // Our overlay texture (can have alpha which is why we need background color)
+if (bDrawConsole) gEnv->pConsole->Draw(); // Allow drawing of console while we stall
+gEnv->pRenderer->EndFrame();
 
-			// Give the system some breathing space
-			backoff.backoff();
-			continue;
+// Give the system some breathing space
+backoff.backoff();
+continue;
 		};
 	}
 	return true;
@@ -370,7 +370,7 @@ const CSplashExample::SWindowProperties CSplashExample::GetWindowProperties()
 
 			return SWindowProperties(
 				GetScreenResolution(-1),
-#if defined(_DEBUG) || defined(_PROFILE)
+#if !defined(_RELEASE)
 				SWindowMode(0, 0)
 #else
 				SWindowMode(1, 0)
@@ -383,17 +383,23 @@ const CSplashExample::SWindowProperties CSplashExample::GetWindowProperties()
 	auto pProfile = (m_pCurrentProfile) ? m_pCurrentProfile : m_pDefaultProfile;
 
 	// Get profile attributes or use predefined defaults
-	int paResolution = -1;
-	if (!pProfile->GetAttribute("Resolution", paResolution, true))
-		paResolution = WINDOW_DEFAULT_RESOLUTION_IDX;
-
+	int paResolution;
 	bool paFullscreen;
-	if (!pProfile->GetAttribute("Fullscreen", paFullscreen, true))
-		paFullscreen = WINDOW_DEFAULT_FULLSCREEN;
-
 	bool paFullscreenWindow;
-	if (!pProfile->GetAttribute("FullscreenWindow", paFullscreenWindow, true))
-		paFullscreenWindow = WINDOW_DEFAULT_HIDE_BORDER;
+
+	TFlowInputData buf;
+
+	buf.SetValueWithConversion<int>(WINDOW_DEFAULT_RESOLUTION_IDX);
+	pProfile->GetAttribute("Resolution", buf, true);
+	buf.GetValueWithConversion<int>(paResolution);
+
+	buf.SetValueWithConversion<bool>(WINDOW_DEFAULT_FULLSCREEN);
+	pProfile->GetAttribute("Fullscreen", buf, true);
+	buf.GetValueWithConversion<bool>(paFullscreen);
+
+	buf.SetValueWithConversion<bool>(WINDOW_DEFAULT_HIDE_BORDER);
+	pProfile->GetAttribute("FullscreenWindow", buf, true);
+	buf.GetValueWithConversion<bool>(paFullscreenWindow);
 
 	return SWindowProperties(
 		GetScreenResolution(paResolution),

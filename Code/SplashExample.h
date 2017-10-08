@@ -144,8 +144,8 @@ private:
 
 	struct SWindowProperties
 	{
-		const SScreenResolution sScreenResolution;
-		const SWindowMode sWindowMode;
+		SScreenResolution sScreenResolution;
+		SWindowMode sWindowMode;
 
 		SWindowProperties(const SScreenResolution &screenResolution, const SWindowMode &windowMode) :
 			sScreenResolution(screenResolution),
