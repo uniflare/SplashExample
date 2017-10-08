@@ -4,7 +4,7 @@ Copyright (c) 2017, uniflare, see LICENSE.txt for details
  Splash Example Plugin is a simple, light-weight splash screen rendering plugin with several features such as;
   - Drop and play!*
   - Compatible with engine templates and GameZero/GameSDK Sample project**
-  - Renders an 'Initial' Splash texture in windowed mode immediately (first)
+  - Renders an 'Initial' Splash texture in windowed mode immediately (first)***
   - Renders a 'Main' Splash texture in windowed or fullscreen mode
   - Several CVars to control the plugin without building from source
     - CVar `splash_plugin_enable` (def 1) Enable/Disable splash plugin
@@ -21,7 +21,10 @@ Copyright (c) 2017, uniflare, see LICENSE.txt for details
   
     *   Installation can vary between projects, be sure to read the INSTALL.txt document in the 'Docs/' folder.
     **  Assumes that the example plugin package is compatible with the target engine.
-
+    *** Make sure you set the correct r_width/r_height cvar values! This plugin assumes you are using the player 
+	        profiles feature of CRYENGINE to store/set your game resolution! These cvars should be the same width 
+			and height of your initial splash image!
+	
 ### Quick Start
 If you want to see it in action immediately, right-click and select 'Launch Game' on any cryproject file*
 	
