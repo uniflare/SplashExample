@@ -129,8 +129,14 @@ void CSplashExample::TryInitialize()
 			if (pCryPak->IsFileExist(SplashTexturePath))
 			{
 				m_pSplashTexture = pRenderer->EF_LoadTexture(SplashTexturePath, FT_DONT_STREAM | FT_NOMIPS);
-				if(!m_pSplashTexture)
+				if (!m_pSplashTexture)
+				{
 					CRY_LOG_ERROR("Unable to load initial splash texture. Path '%s'", SplashTexturePath);
+				}
+				else
+				{
+					m_pSplashTexture->SetHighQualityFiltering(true);
+				}
 			}
 			else
 				CRY_LOG_ERROR("Splash texture not found. Path: '%s'", SplashTexturePath);
