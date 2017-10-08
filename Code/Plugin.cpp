@@ -1,10 +1,5 @@
 // Copyright (c) 2017, uniflare, see LICENSE.txt for details
 
-#ifdef CRYGENERATE_SINGLETONCLASS_GUID
-// Included only once per DLL module.
-#include <CryCore/Platform/platform_impl.inl>
-#endif
-
 #include "StdAfx.h"
 #include "Plugin.h"
 
