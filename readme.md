@@ -28,6 +28,13 @@ If you want to see it in action immediately, right-click and select 'Launch Game
     *   Assumes compatible engines have been installed via the CRYENGINE Launcher,
 	        also assumes the necessary assets folder exists in the projects root and contains the splash 
 			example textures.
+			
+	Note for 5.4: CryGameSDK does not seem to be lnicluded with the downloaded engine via the CRYENGINE Launcher.
+	    For this reason, an extra step is required to test the CryGameSDK; Simply copy CryGameSDK.dll from 
+		the GameSDK (5.4) bin folder to the launcher engine bin folder, by default, this means;
+		    C:\Program Files (x86)\Crytek\CRYENGINE Launcher\Crytek\gamesdk_5.4\GameSDK\bin\win_x64\CryGameSDK.dll
+			to
+			C:\Program Files (x86)\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.4\bin\win_x64\CryGameSDK.dll
 
 ### Integration with a project
 Integration consists of a several requierd steps to combine the splash plugin with an external project. For 

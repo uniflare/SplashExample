@@ -18,7 +18,7 @@ class CPlugin_SplashExample
 	CSplashExample * m_pSplashExample;
 public:
 	CRYINTERFACE_SIMPLE(ICryPlugin)
-		CRYGENERATE_SINGLETONCLASS(CPlugin_SplashExample, "Plugin_SplashExample", 0x53706C6173682045, 0x78616D706C650000)
+		CRYGENERATE_SINGLETONCLASS_GUID(CPlugin_SplashExample, "Plugin_SplashExample", "{ 53706C61 - 7368 - 2045 - 7861 - 6D706C650000 }"_cry_guid)
 
 	// ICryPlugin
 	virtual const char* GetName() const override { return "Splash Example Plugin"; }

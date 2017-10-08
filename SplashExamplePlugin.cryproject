@@ -1,16 +1,27 @@
 {
+    "version": 1,
+    "type": "CRYENGINE Project",
+    "info": { "name": "Splash Example Plugin" },
     "content": {
-        "assets": [
-            "Assets"
-        ],
-        "code": [
-            "Code"
-        ]
-    },
-    "info": {
-        "name": "Splash Example Plugin"
+        "assets": [ "Assets" ],
+        "code": [ "Code" ]
     },
     "require": {
-        "engine": "engine-5.3"
-    }
+        "engine": "engine-5.4",
+        "plugins": [
+            { "type": "EPluginType::Native", "path": "bin/win_x64/SplashExamplePlugin" }
+        ]
+    },
+    "console_variables": [
+        { "name": "splash_show", "value": "1" },
+        { "name": "splash_minimumPlaybackTime", "value": "3.0" },
+        { "name": "splash_show_initial", "value": "1" },
+        { "name": "splash_minimumPlaybackTime_initial", "value": "3.0" },
+        { "name": "splash_texture", "value": "SplashExample/textures/Splash.dds" },
+        { "name": "splash_texture_initial", "value": "SplashExample/textures/InitialSplash.dds" },
+        { "name": "r_width", "value": "512" },
+        { "name": "r_height", "value": "300" },
+        { "name": "r_fullscreenwindow", "value": "1" },
+        { "name": "r_fullscreen", "value": "0" }
+    ]
 }

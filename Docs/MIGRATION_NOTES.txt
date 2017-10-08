@@ -1,17 +1,16 @@
 Copyright (c) 2017, uniflare, see LICENSE.txt for details
 Splash Example Plugin
 
-Some changes were made during a technical difficulty that resulted in the account associated with this plugin 
-on the marketplace to remove the submitted project. These changes are more on the technical side although 
-some further compatibility was ensured for 5.3 GameSDK project and end-user usage of the plugin was 
-generally made easier.
+Since 1.3.0 for 5.3, migration to 5.4 resulted in a new limitation for building from source - 
+you cannot specify a custom output directory for release builds in the projects cmakelists file.
+Yet, inherited the more robust and compatible cmake system from 5.4. Minor tweaks to code base.
 
 # Usage differences
-	1. The project now comes with two test projects that use GameZero/GameSDK as "Host" projects.
-	2. Further documentation was added in 'Docs' folder.
+	1. CVARS are now put into the respective cryproject files. (No more .cfg editing).
+	2. Necessary data from cryplugin.csv moved into respective cryproject files., csv deleted.
+	3. Renamed DLL name.
 
 # Technical changes
 	*Some things may be missed, check github commits for more detailed information.
 	
-	1. The TestPlatform feature from the cmakelists file was defaulted to disabled to 
-	    prevent unwanted folders being created when building from source.
+	No significant technical differences.

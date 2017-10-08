@@ -30,6 +30,7 @@ as well as an overview of the internal implementation details.
         - Uses the player profile attributes system to store data for GameSDK compatibility**
 		- Untested with multi-display single-desktop span configurations. Probably will not work in these cases.
 		- Initial splash is limited to a minimum size of 512x300, the minimum resolution used by the engine.
+		- Cannot specify custom dll binary output path for release builds - building from source.
 
 	# Initialization
 		Uses system events to try to determine the earliest point in engine init to init required data 

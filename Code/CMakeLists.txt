@@ -1,99 +1,85 @@
-# Copyright (c) 2017, uniflare, see LICENSE.txt for details
-# Make sure you set these variables appropriately! (If using a host project)
-#
+cmake_minimum_required (VERSION 3.6.2)
+set(CRYENGINE_DIR "C:/Program Files (x86)/Crytek/CRYENGINE Launcher/Crytek/CRYENGINE_5.4")
+set(TOOLS_CMAKE_DIR "${CRYENGINE_DIR}/Tools/CMake")
+
+set(PROJECT_BUILD 1)
+set(PROJECT_DIR "C:/dev/git/sf/SplashExample")
+
+include("${TOOLS_CMAKE_DIR}/CommonOptions.cmake")
+
+add_subdirectory("${CRYENGINE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/CRYENGINE")
+
+include("${TOOLS_CMAKE_DIR}/Configure.cmake")
+start_sources()
+
+sources_platform(ALL)
+add_sources("Code_uber.cpp"
+    PROJECTS SplashExamplePlugin
+    SOURCE_GROUP "Root"
+		"Plugin.cpp"
+		"SplashExample.cpp"
+		"StdAfx.cpp"
+		"cvars.h"
+		"Plugin.h"
+		"SplashExample.h"
+		"StdAfx.h"
+)
+
+end_sources()
+
+CryEngineModule(SplashExamplePlugin PCH "StdAfx.cpp" SOLUTION_FOLDER "Project")
+
+target_include_directories(${THIS_PROJECT}
+PRIVATE 
+    "${CRYENGINE_DIR}/Code/CryEngine/CryCommon"
+    "${CRYENGINE_DIR}/Code/CryEngine/CryAction"
+	"${CRYENGINE_DIR}/Code/CryEngine/CrySchematyc/Core/Interface"
+	"${CRYENGINE_DIR}/Code/CryPlugins/CryDefaultEntities/Module"
+)
+
+# Set StartUp project in Visual Studio
+
+add_library(GameLauncher STATIC "${CRYENGINE_DIR}/Code/CryEngine/CryCommon/CryCore/Platform/platform.h")
+set_target_properties(GameLauncher PROPERTIES LINKER_LANGUAGE CXX)
+if (WIN32)
+    set_visual_studio_debugger_command(GameLauncher "${CRYENGINE_DIR}/bin/win_x64/GameLauncher.exe" "-project \"C:/dev/git/sf/SplashExample/SplashExamplePlugin.cryproject\"")
+endif()
+
+add_library(Sandbox STATIC "${CRYENGINE_DIR}/Code/CryEngine/CryCommon/CryCore/Platform/platform.h")
+set_target_properties(Sandbox PROPERTIES LINKER_LANGUAGE CXX)
+if (WIN32)
+    set_visual_studio_debugger_command(Sandbox "${CRYENGINE_DIR}/bin/win_x64/Sandbox.exe" "-project \"C:/dev/git/sf/SplashExample/SplashExamplePlugin.cryproject\"")
+endif()
+
+add_library(GameServer STATIC "${CRYENGINE_DIR}/Code/CryEngine/CryCommon/CryCore/Platform/platform.h")
+set_target_properties(GameServer PROPERTIES LINKER_LANGUAGE CXX)
+if (WIN32)
+    set_visual_studio_debugger_command(GameServer "${CRYENGINE_DIR}/bin/win_x64/Game_Server.exe" "-project \"C:/dev/git/sf/SplashExample/SplashExamplePlugin.cryproject\"")
+endif()
+
+set_solution_startup_target(GameLauncher)
+
+if (WIN32)
+    set_visual_studio_debugger_command( ${THIS_PROJECT} "${CRYENGINE_DIR}/bin/win_x64/GameLauncher.exe" "-project \"C:/dev/git/sf/SplashExample/SplashExamplePlugin.cryproject\"" )
+endif()
+
+#BEGIN-CUSTOM
 set (USE_TEST_PLATFORM_PROJECT "FALSE")
 
-set (TestPlatformRoot "C:/dev/git/sf/BLANKGAME")
-set (TestPlatformPath "${TestPlatformRoot}/bin/win_x64")
-set (TestPlatformProject "${TestPlatformRoot}/Game.cryproject")
+set (TestPlatformRoot "C:/dev/git/sf/BLANKGAME/")
+set (TestPlatformPath "${TestPlatformRoot}bin/win_x64/")
+set (TestPlatformProject "${TestPlatformRoot}Game.cryproject")
 
 # Default to this project, if no test platform project is used
 if (NOT USE_TEST_PLATFORM_PROJECT)
 	set (TestPlatformProject "${PROJECT_FILE}")
 endif()
 
-set (ProjectName "SplashExample")
-
-cmake_minimum_required (VERSION 3.6.0)
-project (${ProjectName} VERSION 1.3.0 LANGUAGES CXX)
-
-if (${CMAKE_GENERATOR} MATCHES "^Visual Studio")
-	# Set startup project properties
-	configure_file ("${PROJECT_NAME}.vcxproj.user.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user")
-	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
-endif()
-
-# Set output directory for executable files
-if(CMAKE_CL_64)
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x64")
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x64_release")
-else(CMAKE_CL_64)
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x86")
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x86_release")
-endif(CMAKE_CL_64)
-
-# Set output directory for DLL files
-if(CMAKE_CL_64)
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x64")
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x64_release")
-else(CMAKE_CL_64)
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x86")
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x86_release")
-endif(CMAKE_CL_64)
-
-# Set output directory for LIB files
-if(CMAKE_CL_64)
-	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x64\\lib")
-	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x64_release\\lib")
-else(CMAKE_CL_64)
-	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x86\\lib")
-	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}\\..\\..\\bin\\win_x86_release\\lib")
-endif(CMAKE_CL_64)
-
-option(OPTION_PCH "Enable Precompiled headers" ON)
-
-find_package (CryCommon REQUIRED)
-find_package (CryAction REQUIRED)
-
-set (SourceGroup_Main
-	"SplashExample.cpp"
-	"SplashExample.h"
-	"Plugin.cpp"
-	"Plugin.h"
-	"CVars.h"
-	"StdAfx.cpp"
-	"StdAfx.h"
-)
-source_group("Main" FILES ${SourceGroup_Main})
-
-set (SOURCE
-	${SourceGroup_Main}
-)
-if(OPTION_PCH AND MSVC)
-	set (PRECOMPILED_SOURCE ${SOURCE})
-	list(REMOVE_ITEM PRECOMPILED_SOURCE "StdAfx.cpp")
-
-	set (PRECOMPILED_BINARY ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pch)
-	set_source_files_properties (${PRECOMPILED_SOURCE} PROPERTIES COMPILE_FLAGS "/Yu\"StdAfx.h\" /Fp\"${PRECOMPILED_BINARY}\"" OBJECT_DEPENDS "${PRECOMPILED_BINARY}")
-	set_source_files_properties (StdAfx.cpp PROPERTIES COMPILE_FLAGS "/Yc\"StdAfx.h\" /Fp\"${PRECOMPILED_BINARY}\"" OBJECT_OUTPUTS "${PRECOMPILED_BINARY}")
-endif (OPTION_PCH AND MSVC)
-
-add_library(${PROJECT_NAME} MODULE ${SOURCE})
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${PROJECT_NAME} PRIVATE CryCommon CryAction)
-
-# Add _RELEASE define to release config
-target_compile_definitions(${PROJECT_NAME}
-  PUBLIC $<$<CONFIG:Release>:_RELEASE>)
-
-if(WIN32)
-	target_link_libraries(${PROJECT_NAME} PRIVATE Ntdll)
-endif(WIN32)
-
 if(USE_TEST_PLATFORM_PROJECT)
-	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
+	add_custom_command(TARGET ${THIS_PROJECT} POST_BUILD 
 	  COMMAND "${CMAKE_COMMAND}" -E copy 
-		 "$<TARGET_FILE:${PROJECT_NAME}>"
-		 "${TestPlatformPath}/$<TARGET_FILE_NAME:${PROJECT_NAME}>" 
+		 "$<TARGET_FILE:${THIS_PROJECT}>"
+		 "${TestPlatformPath}/$<TARGET_FILE_NAME:${THIS_PROJECT}>" 
 	  COMMENT "Copying to test platform directory")
 endif(USE_TEST_PLATFORM_PROJECT)
+#END-CUSTOM

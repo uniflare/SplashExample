@@ -7,7 +7,7 @@ Splash Example Plugin
 	Project templates
 
 # Pre-requisites
-	CRYENGINE version 5.3.x
+	CRYENGINE version 5.4.x
 	
     1. Compatible and working CRYENGINE installation either,
         by the official CRYENGINE Launcher, or 
@@ -35,9 +35,14 @@ Splash Example Plugin
 		           |----game.cfg
 		           |----gamedata.cryasset.pak
 		           |----...
-	4. For best results, copy the contents of the supplied 'Assets/SplashExample.cfg' into your GameZero/GameSDK game.cfg file.
+	
+	3b. (GameSDK Only)
+	    For 5.4, you will need to copy the GameSDK dll from the sample project to the matcvhing engine folder, eg
+		C:\Program Files (x86)\Crytek\CRYENGINE Launcher\Crytek\gamesdk_5.4\GameSDK\bin\win_x64\CryGameSDK.dll
+		    to
+		C:\Program Files (x86)\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.4\bin\win_x64\CryGameSDK.dll
 				   
-	5. (Right-Click) Launch Game using one of the provided cryproject files 
+	4. (Right-Click) Launch Game using one of the provided cryproject files 
 		'SplashExamplePlugin_GameZero', or 'SplashExamplePlugin_GameSDK'
 		
 	Note: By default these projects are set to use the official engine 
@@ -46,19 +51,14 @@ Splash Example Plugin
 # Installation/Integration into your project
 	
 	# Using pre-built binary for windows (x64 only)
-		1. CE 5.3 makes use of cryplugin.csv file to load required plugins for the project,
-		    you must make sure the line from the supplied file is added to the cryplugin.csv 
-			responsible for your desired project.
+		1. CE 5.4 removes the cryplugin.csv file and takes CVARS in the respective cryproject file, 
+		    be sure to copy necessary cvar entries (look to the supplied cryproject files for reference).
 		
 		2. This package contains custom texture assets that must be bundled with your desired 
-		    project assets, a simple 'drag & drop' from `Assets/SplashExample` to 
-			to your `Project/Assets/SplashExample` will suffice.
+		    project assets, a simple 'drag & drop' from `Assets/SplashExamplePlugin` to 
+			to your `Project/Assets/SplashExamplePlugin` will suffice.
 		
-		3. Due to compatiblity reasons with the player profiles manager certain CVARS should 
-		    be set in either your system.cfg or game.cfg files in use by your project. To begin, 
-			some example CVARS are provided in the `Assets/SplashExample.cfg` file.
-		
-		4. Make sure the binary (SplashExample.dll) is bundled with your own project binary, 
+		3. Make sure the binary (SplashExamplePlugin.dll) is bundled with your own project binary, 
 		    this should reside in `Project/bin/win_x64` directory next to any 'Game' dll.
 		
 	# Building Splash Example from source
@@ -81,4 +81,4 @@ Splash Example Plugin
 # WARNING
 	It is not reccommended to use the "Switch engine version" feature of the cryproject context menu 
 	for moving from or to different engine versions. Rather, only use this feature to swtich between 
-	locally registered engines of the same version, ie, 'Official 5.3.x' and 'Custom Built-From-Source 5.3.x'.
+	locally registered engines of the same version, ie, 'Official 5.4.x' and 'Custom Built-From-Source 5.4.x'.
